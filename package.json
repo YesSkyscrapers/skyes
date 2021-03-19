@@ -6,5 +6,23 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node -r esm index.js"
-  }
+  },
+  "name": "skyes",
+  "version": "0.0.1",
+  "description": "backend engine",
+  "main": "src/index.ts",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YesSkyscrapers/skyes.git"
+  },
+  "keywords": [
+    "skyes"
+  ],
+  "author": "YesSkyscrapers",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/YesSkyscrapers/skyes/issues"
+  },
+  "homepage": "https://github.com/YesSkyscrapers/skyes#readme"
 }
