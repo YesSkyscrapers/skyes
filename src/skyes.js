@@ -4,7 +4,8 @@ import localServer from "./localServer";
 const DEFAULT_SKYES_CONFIG = {}
 
 const skyes = {
-    init: () => { }
+    init: () => { },
+    addAction: () => { },
 }
 
 skyes.init = async (config = {}) => {
@@ -21,5 +22,8 @@ skyes.init = async (config = {}) => {
 
 }
 
+skyes.addAction = (actionName, handler, entityDefinition, method) => {
+    localServer.addAction(actionName, handler, entityDefinition, method)
+}
 
 export default skyes;

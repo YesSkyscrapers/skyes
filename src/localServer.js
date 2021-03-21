@@ -1,9 +1,11 @@
 import http from 'http'
 import readHandler from './handlers/readHandler'
 import errorHandler from './handlers/errorHandler'
+import { paramsToObject } from 'skyes/src/tools'
 
 let localServer = {
-    start: () => { }
+    start: () => { },
+    addAction: () => { }
 }
 
 const DEFAULT_SERVER_START_CONFIG = {
@@ -16,8 +18,13 @@ let handlers = [];
 
 const getRequestObject = httpRequest => {
     return new Promise((resolve, reject) => {
+
+        const [url, params, ...notUsed] = httpRequest.url.split('?')
+
         let requestObject = {
-            url: httpRequest.url,
+            url: url.slice(1),
+            paramsObject: paramsToObject(params),
+            method: httpRequest.method,
             body: [],
             headers: []
         }
@@ -35,8 +42,12 @@ const getRequestObject = httpRequest => {
             reject(`Body fetching error: ${error}`)
         });
         httpRequest.on('end', () => {
-            requestObject.body = Buffer.concat(requestObject.body).toString();
-            resolve(requestObject);
+            try {
+                requestObject.body = JSON.parse(Buffer.concat(requestObject.body).toString());
+                resolve(requestObject);
+            } catch (error) {
+                reject(`JSON parse error: ${error}`)
+            }
         })
     })
 }
@@ -69,39 +80,36 @@ const globalHandler = async (httpRequest, httpResponse) => {
     let request = null
     try {
         request = await getRequestObject(httpRequest)
-        // if (request) {
-        //     const onlyUrl = request.url.split('?')[0]
-        //     const handlerNames = onlyUrl.split('/');
-        //     const handlerName = handlerNames[1]
-        //     switch (handlerName) {
-        //         case 'ping': {
-        //             return pingHandler(request, response)
-        //         }
-        //         case 'feed': {
-        //             if (handlerNames[2] && handlerNames[2] == 'posts') {
-        //                 return feedPostHandler(request, response)
-        //             } else {
-        //                 return listPreHandler(feedHandler, errorHandler)(request, response)
-        //             }
-        //         }
-        //         default: {
-        //             return errorHandler(request, response)
-        //         }
-        //     }
-        // } else {
-        //     return errorHandler(request, response)
-        // }
-        throw 'someErr0r'
+
+        switch (request.url) {
+            case 'action': {
+                const handler = handlers
+                    .find(handler => {
+                        handler.method = handler.method ? handler.method : "POST"
+                        return handler.method == request.method && handler.action == request.body.action
+                    })
+                if (handler) {
+                    await handler.handler(request, response)(handler.entityDefinition)
+                } else {
+                    await errorHandler(request, response)("Action not found")
+                }
+                break;
+            }
+            default: {
+                await errorHandler(request, response)("Handler not found")
+                break;
+            }
+        }
     } catch (error) {
         console.log(`Global handler error: ${error}`)
-        errorHandler(request, response)(error)
+        await errorHandler(request, response)(error)
     }
     return processResponse(httpResponse, response)
 }
 
 localServer.start = async (config = {}) => {
     try {
-        handlers.push(readHandler)
+
         serverStartConfig = {
             ...DEFAULT_SERVER_START_CONFIG,
             ...config
@@ -120,6 +128,15 @@ localServer.start = async (config = {}) => {
     } catch (error) {
         throw `LocalServer start failed with error: ${error}`
     }
+}
+
+localServer.addAction = (actionName, handler, entityDefinition, method) => {
+    handlers.push({
+        action: actionName,
+        handler,
+        entityDefinition,
+        method
+    })
 }
 
 
