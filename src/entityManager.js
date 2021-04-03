@@ -1,9 +1,9 @@
-import { createConnection, ILike, Like } from "typeorm";
+import { createConnection, Equal, ILike, In, Like } from "typeorm";
+const File = require("./entities/model/File").File
 
 const entityManager = {
     registerEntity: (type) => { },
     init: () => { },
-    saveEntity: (entity) => { },
     read: (entity, pageSize, pageIndex) => { },
     create: (entityDefinition, entity) => { },
     update: (entityDefinition, entity) => { },
@@ -17,9 +17,14 @@ entityManager.registerEntity = (type) => {
     entities.push(type);
 }
 
-entityManager.init = async () => {
+entityManager.init = async (ormconfig) => {
+    entityManager.registerEntity(File);
+    const config = {
+        ...ormconfig,
+        entities: ormconfig.entities.concat(require("./entities/schemas/FileSchema"))
+    }
     try {
-        connection = await createConnection()
+        connection = await createConnection(config)
     } catch (error) {
         throw `EntityManager not created connection: ${error}`
     }
@@ -46,14 +51,7 @@ const checkEntityDefinition = entityDefinition => {
     }
 }
 
-entityManager.saveEntity = async (entity) => {
-    checkConnection();
 
-    const entityDefinition = findEntityDefinition(entity);
-    const repository = connection.getRepository(entityDefinition);
-    await repository.save(entity)
-
-}
 
 const mapFilters = filters => {
     let filtersObject = {}
@@ -68,6 +66,20 @@ const mapFilters = filters => {
                 filtersObject = {
                     ...filtersObject,
                     [filter.key]: Like(filter.value)
+                }
+                break;
+            }
+            case "in": {
+                filtersObject = {
+                    ...filtersObject,
+                    [filter.key]: In(filter.value)
+                }
+                break;
+            }
+            case "equal": {
+                filtersObject = {
+                    ...filtersObject,
+                    [filter.key]: Equal(filter.value)
                 }
                 break;
             }
@@ -108,10 +120,9 @@ entityManager.create = async (entityDefinition, entity) => {
 
     const repository = connection.getRepository(entityDefinition);
     let result = {
-        count: 0
+        count: 0,
+        entity: await repository.save(entity)
     }
-
-    await repository.save(entity)
 
     result.count = await repository.count()
 

@@ -1,10 +1,11 @@
 interface ReadOutput {
-    data: [];
+    data: Array<any>;
     count: number;
 }
 
 interface CreateOutput {
     count: number;
+    entity: any;
 }
 
 interface DeleteOutput {
@@ -18,15 +19,15 @@ interface UpdateOutput {
 interface Filter {
     type: string;
     key: string;
-    value: string;
+    value: string | string[];
 }
 
 declare namespace entityManager {
     function registerEntity(type: any): void;
     function init(): void;
-    function saveEntity(entity: any): void;
-    function read(entityDefinition: any, pageSize: number, pageIndex: number): ReadOutput;
-    function read(entityDefinition: any, pageSize: number, pageIndex: number, filters: Array<Filter>): ReadOutput;
+    function init(ormconfig: any): void;
+    function read(entityDefinition: any, pageSize: number, pageIndex: number): Promise<ReadOutput>;
+    function read(entityDefinition: any, pageSize: number, pageIndex: number, filters: Array<Filter>): Promise<ReadOutput>;
     function create(entityDefinition: any, entity: any): CreateOutput;
     function update(entityDefinition: any, entity: any): UpdateOutput;
     function deleteEntities(entityDefinition: any, entities: any): DeleteOutput;

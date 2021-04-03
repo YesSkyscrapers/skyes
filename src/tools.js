@@ -20,3 +20,14 @@ export const paramsToObject = (params) => {
 }
 
 
+
+
+export const waitFor = (delay) => {
+    return new Promise(res => {
+        setTimeout(() => {
+            return res()
+        }, delay)
+    })
+}
+
+
