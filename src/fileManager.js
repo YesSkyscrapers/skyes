@@ -9,6 +9,8 @@ import { entityManager } from 'skyes';
 
 const DEFAULT_FILES_FOLDER = 'files/'
 let FILES_FOLDER = DEFAULT_FILES_FOLDER;
+const DEFAULT_FILES_MAX_SIZE = 1024 * 1024 * 1024
+let FILES_MAX_SIZE = DEFAULT_FILES_MAX_SIZE;
 
 const fileManager = {
     init: () => { },
@@ -19,6 +21,9 @@ const fileManager = {
 fileManager.init = async (config) => {
     if (config && config.filesFolder) {
         FILES_FOLDER = config.filesFolder
+    }
+    if (config && config.filexMaxSize) {
+        FILES_MAX_SIZE = config.filexMaxSize
     }
     try {
         checkFolderExists();
@@ -45,6 +50,35 @@ const getNewFileName = () => {
     return newName
 }
 
+const checkMaxFilesSize = () => {
+    return new Promise(async (resolve, reject) => {
+        const { sum } = await (await entityManager.getRepository(File))
+            .createQueryBuilder("file")
+            .select("SUM(file.fileSize)", "sum")
+            .getRawOne();
+
+
+        if (sum > FILES_MAX_SIZE) {
+            let firstElement = (await entityManager.read(File, 1, 0, [{
+                type: "equal",
+                key: "deleted",
+                value: false
+            }])).data[0]
+            firstElement.deleted = true
+            firstElement.fileSize = 0
+
+            fs.rm(firstElement.filepath, async () => {
+                await entityManager.update(File, firstElement)
+                resolve();
+            })
+
+        }
+
+    }).catch(error => {
+        console.log(`Check files max size error: ${error}`)
+    })
+}
+
 fileManager.saveFile = async response => {
     try {
         checkFolderExists()
@@ -66,10 +100,14 @@ fileManager.saveFile = async response => {
         let file = new File();
         file.name = newFileName;
         file.filepath = newFilePath;
+        file.fileSize = fs.statSync(newFilePath).size;
         file.date = moment().format();
         file.type = newFileType;
 
         const creationResult = await entityManager.create(File, file);
+
+        checkMaxFilesSize()
+
         return creationResult.entity;
 
     } catch (error) {

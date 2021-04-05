@@ -166,6 +166,15 @@ entityManager.update = async (entityDefinition, entity) => {
     return result;
 }
 
+entityManager.getRepository = async (entityDefinition) => {
+    checkConnection();
+    checkEntityDefinition(entityDefinition)
+
+    const repository = await connection.getRepository(entityDefinition);
+
+    return repository;
+}
+
 
 
 

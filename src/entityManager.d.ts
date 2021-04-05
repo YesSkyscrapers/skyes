@@ -1,3 +1,5 @@
+import { Repository } from "typeorm";
+
 interface ReadOutput {
     data: Array<any>;
     count: number;
@@ -31,6 +33,7 @@ declare namespace entityManager {
     function create(entityDefinition: any, entity: any): CreateOutput;
     function update(entityDefinition: any, entity: any): UpdateOutput;
     function deleteEntities(entityDefinition: any, entities: any): DeleteOutput;
+    function getRepository(entityDefinition: any): Promise<Repository>;
 }
 
 export default entityManager;

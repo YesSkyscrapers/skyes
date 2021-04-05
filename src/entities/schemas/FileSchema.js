@@ -21,6 +21,13 @@ module.exports = new EntitySchema({
         },
         type: {
             type: "varchar"
+        },
+        fileSize: {
+            type: "int"
+        },
+        deleted: {
+            default: false,
+            type: "boolean"
         }
     }
 });
