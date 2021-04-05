@@ -13,7 +13,7 @@ module.exports = new EntitySchema({
         name: {
             type: "varchar"
         },
-        filename: {
+        filepath: {
             type: "varchar"
         },
         date: {

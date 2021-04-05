@@ -120,8 +120,8 @@ entityManager.create = async (entityDefinition, entity) => {
 
     const repository = connection.getRepository(entityDefinition);
     let result = {
-        count: 0,
-        entity: await repository.save(entity)
+        entity: await repository.save(entity),
+        count: await repository.count(),
     }
 
     result.count = await repository.count()

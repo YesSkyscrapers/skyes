@@ -1,8 +1,8 @@
 class File {
-    constructor(id, name, filename, date, type) {
+    constructor(id, name, filepath, date, type) {
         this.id = id;
         this.name = name;
-        this.filename = filename;
+        this.filepath = filepath;
         this.date = date;
         this.type = type;
     }

@@ -1,9 +1,11 @@
 import { serverStartConfig } from "skyes/src/localServer";
 import { backgroundProcessConfig } from "skyes/src/backgroundProcessesManager";
+import { fileConfig } from "skyes/src/fileManager";
 
 declare interface skyesConfig {
     serverStartConfig: serverStartConfig | null;
-    ormconfig: any
+    ormconfig: any,
+    filesConfig: fileConfig
 }
 
 

@@ -3,7 +3,8 @@ import backgroundProcessesManager from "skyes/src/backgroundProcessesManager";
 import fileManager from "skyes/src/fileManager";
 import localServer from "./localServer";
 
-const DEFAULT_SKYES_CONFIG = {}
+const DEFAULT_SKYES_CONFIG = {
+}
 
 const skyes = {
     init: () => { },
@@ -17,8 +18,8 @@ skyes.init = async (config = {}) => {
         ...config
     }
     try {
-        await fileManager.init();
-        //await entityManager.init(skyesConfig.ormconfig);
+        await entityManager.init(skyesConfig.ormconfig);
+        await fileManager.init(skyesConfig.filesConfig);
         //await localServer.start(skyesConfig.serverStartConfig)
 
     } catch (error) {
