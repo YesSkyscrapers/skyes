@@ -20,7 +20,7 @@ skyes.init = async (config = {}) => {
     try {
         await entityManager.init(skyesConfig.ormconfig);
         await fileManager.init(skyesConfig.filesConfig);
-        //await localServer.start(skyesConfig.serverStartConfig)
+        await localServer.start(skyesConfig.serverStartConfig)
 
     } catch (error) {
         console.log(`Skyes start failed. Error: ${error}`)

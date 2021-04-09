@@ -115,6 +115,41 @@ fileManager.saveFile = async response => {
     }
 }
 
+fileManager.writeFileToResponse = async (response, fileId) => {
+    const readResult = await entityManager.read(File, 1, 0, [{
+        type: "equal",
+        key: "id",
+        value: fileId
+    }])
+
+
+    if (readResult.data.length == 0) {
+        throw `File record not found`
+    } else {
+        const fileRecord = readResult.data[0]
+        if (fileRecord.deleted) {
+            throw `File deleted`
+        } else {
+
+            try {
+                const fileInfo = fs.statSync(fileRecord.filepath);
+
+                response.writeHead(200, {
+                    'Content-Type': fileRecord.type,
+                    'Content-Length': fileInfo.size
+                });
+
+                var readStream = fs.createReadStream(fileRecord.filepath);
+                readStream.pipe(response);
+            } catch (_error) {
+                const error = `FileManager writeFileToResponse error: ${_error}`
+                throw error;
+            }
+        }
+    }
+
+}
+
 
 
 export default fileManager;

@@ -1,5 +1,5 @@
 import http from 'http'
-import readHandler from './handlers/readHandler'
+import fileReadHandler from './handlers/fileReadHandler'
 import errorHandler from './handlers/errorHandler'
 import { paramsToObject } from 'skyes/src/tools'
 
@@ -23,6 +23,7 @@ const getRequestObject = httpRequest => {
 
         let requestObject = {
             url: url.slice(1),
+            urlParts: url.slice(1).split('/'),
             paramsObject: paramsToObject(params),
             method: httpRequest.method,
             body: [],
@@ -66,7 +67,7 @@ const createResponseObject = () => {
     })
 }
 
-const processResponse = (httpResponse, responseObject) => {
+export const processResponse = (httpResponse, responseObject) => {
     responseObject.headers.forEach(header => {
         httpResponse.setHeader(header.key, header.value)
     })
@@ -96,12 +97,26 @@ const globalHandler = async (httpRequest, httpResponse) => {
                 break;
             }
             default: {
-                await errorHandler(request, response)("Handler not found")
+
+                switch (request.urlParts[0]) {
+
+                    case "files": {
+                        return await fileReadHandler(request, response)(httpResponse)
+                        break;
+                    }
+
+                    default: {
+                        await errorHandler(request, response)("Handler not found")
+                        break;
+                    }
+                }
+
                 break;
             }
         }
-    } catch (error) {
-        console.log(`Global handler error: ${error}`)
+    } catch (_error) {
+        const error = `Global handler error: ${_error}`
+        console.log(error)
         await errorHandler(request, response)(error)
     }
     return processResponse(httpResponse, response)
