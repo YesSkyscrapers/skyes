@@ -1,11 +1,14 @@
 import http from 'http'
 import fileReadHandler from './handlers/fileReadHandler'
 import errorHandler from './handlers/errorHandler'
+import disposeHandler from './handlers/disposeHandler'
 import { paramsToObject } from 'skyes/src/tools'
 
 let localServer = {
     start: () => { },
-    addAction: () => { }
+    addAction: () => { },
+    addHandler: () => { },
+    stop: () => { }
 }
 
 const DEFAULT_SERVER_START_CONFIG = {
@@ -14,6 +17,7 @@ const DEFAULT_SERVER_START_CONFIG = {
 
 let serverStartConfig = null;
 let server = null;
+let actionHandlers = [];
 let handlers = [];
 
 const getRequestObject = httpRequest => {
@@ -22,7 +26,7 @@ const getRequestObject = httpRequest => {
         const [url, params, ...notUsed] = httpRequest.url.split('?')
 
         let requestObject = {
-            url: url.slice(1),
+            url: url.slice(1).endsWith("/") ? url.slice(1).slice(0, -1) : url.slice(1),
             urlParts: url.slice(1).split('/'),
             paramsObject: paramsToObject(params),
             method: httpRequest.method,
@@ -82,36 +86,48 @@ const globalHandler = async (httpRequest, httpResponse) => {
     try {
         request = await getRequestObject(httpRequest)
 
-        switch (request.url) {
-            case 'action': {
-                const handler = handlers
-                    .find(handler => {
-                        handler.method = handler.method ? handler.method : "POST"
-                        return handler.method == request.method && handler.action == request.body.action
-                    })
-                if (handler) {
-                    await handler.handler(request, response)(handler.entityDefinition)
-                } else {
-                    await errorHandler(request, response)("Action not found")
+        const customHandler = handlers.find(handlerObject => {
+            return handlerObject.url == request.url
+        })
+
+        if (customHandler) {
+            await customHandler.handler(request, response)
+        } else {
+            switch (request.url) {
+                case 'action': {
+                    const handler = actionHandlers
+                        .find(handler => {
+                            handler.method = handler.method ? handler.method : "POST"
+                            return handler.method == request.method && handler.action == request.body.action
+                        })
+                    if (handler) {
+                        await handler.handler(request, response)(handler.entityDefinition)
+                    } else {
+                        await errorHandler(request, response)("Action not found")
+                    }
+                    break;
                 }
-                break;
-            }
-            default: {
+                case 'dispose': {
+                    return await disposeHandler(request, response)(httpResponse)
+                    break;
+                }
+                default: {
 
-                switch (request.urlParts[0]) {
+                    switch (request.urlParts[0]) {
 
-                    case "files": {
-                        return await fileReadHandler(request, response)(httpResponse)
-                        break;
+                        case "files": {
+                            return await fileReadHandler(request, response)(httpResponse)
+                            break;
+                        }
+
+                        default: {
+                            await errorHandler(request, response)("Handler not found")
+                            break;
+                        }
                     }
 
-                    default: {
-                        await errorHandler(request, response)("Handler not found")
-                        break;
-                    }
+                    break;
                 }
-
-                break;
             }
         }
     } catch (_error) {
@@ -124,7 +140,6 @@ const globalHandler = async (httpRequest, httpResponse) => {
 
 localServer.start = async (config = {}) => {
     try {
-
         serverStartConfig = {
             ...DEFAULT_SERVER_START_CONFIG,
             ...config
@@ -145,12 +160,31 @@ localServer.start = async (config = {}) => {
     }
 }
 
+localServer.stop = async () => {
+    try {
+        await new Promise((resolve, reject) => {
+            server.close(() => {
+                console.log('Local server stopped')
+                resolve();
+            })
+        })
+    } catch (error) {
+        throw `LocalServer stop failed with error: ${error}`
+    }
+}
+
 localServer.addAction = (actionName, handler, entityDefinition, method) => {
-    handlers.push({
+    actionHandlers.push({
         action: actionName,
         handler,
         entityDefinition,
         method
+    })
+}
+localServer.addHandler = (url, handler) => {
+    handlers.push({
+        url: url,
+        handler
     })
 }
 

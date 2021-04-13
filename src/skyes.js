@@ -28,8 +28,26 @@ skyes.init = async (config = {}) => {
 
 }
 
+skyes.dispose = async () => {
+    try {
+        await localServer.stop();
+        await entityManager.dispose();
+        process.exit(0)
+        //filemanager doesnt need be dispose
+    } catch (error) {
+        const _error = `Skyes dispose failed. Error: ${error}`
+        console.log(_error)
+        throw _error
+    }
+
+}
+
 skyes.addAction = (actionName, handler, entityDefinition, method) => {
     localServer.addAction(actionName, handler, entityDefinition, method)
+}
+
+skyes.addHandler = (url, handler) => {
+    localServer.addHandler(url, handler)
 }
 
 skyes.addbackgroundProcess = (processName, func, config) => {

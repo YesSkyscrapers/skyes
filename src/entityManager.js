@@ -30,6 +30,15 @@ entityManager.init = async (ormconfig) => {
     }
 }
 
+entityManager.dispose = async () => {
+    try {
+        await connection.close();
+        console.log('EntityManager connection disposed.')
+    } catch (error) {
+        throw `EntityManager connection dispose failed: ${error}`
+    }
+}
+
 const checkConnection = () => {
     if (!connection) {
         throw 'EntityManager DB connection not established'

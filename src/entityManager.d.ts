@@ -34,6 +34,7 @@ declare namespace entityManager {
     function update(entityDefinition: any, entity: any): UpdateOutput;
     function deleteEntities(entityDefinition: any, entities: any): DeleteOutput;
     function getRepository(entityDefinition: any): Promise<Repository>;
+    function dispose(): Promise<void>;
 }
 
 export default entityManager;

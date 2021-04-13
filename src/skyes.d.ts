@@ -1,6 +1,8 @@
 import { serverStartConfig } from "skyes/src/localServer";
 import { backgroundProcessConfig } from "skyes/src/backgroundProcessesManager";
 import { fileConfig } from "skyes/src/fileManager";
+import { Request } from "skyes/src/definitions/request";
+import { Response } from "skyes/src/definitions/response";
 
 declare interface skyesConfig {
     serverStartConfig: serverStartConfig | null;
@@ -12,8 +14,10 @@ declare interface skyesConfig {
 declare namespace skyes {
     function init(skyesConfig: skyesConfig): Promise<void>;
     function init(): Promise<void>;
-    function addAction(actionName: string, handler: Promise<void>, entityDefinition: any, method: string);
-    function addAction(actionName: string, handler: Promise<void>, entityDefinition: any);
+    function dispose(): Promise<void>;
+    function addAction(actionName: string, handler: (request: Request, response: Response) => Promise<void>, entityDefinition: any, method: string);
+    function addAction(actionName: string, handler: (request: Request, response: Response) => Promise<void>, entityDefinition: any);
+    function addHandler(url: string, handler: (request: Request, response: Response) => Promise<void>);
     function addbackgroundProcess(processName: string, func: () => void, config: backgroundProcessConfig);
 }
 
