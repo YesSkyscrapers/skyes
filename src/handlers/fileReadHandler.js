@@ -13,7 +13,6 @@ const handler = (request, response) => {
 
         const fileId = request.urlParts[1];
 
-
         if (!fileId) {
             await makeError(request, response)("FileId wrong!")
         }

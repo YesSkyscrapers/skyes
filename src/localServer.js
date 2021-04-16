@@ -2,6 +2,7 @@ import http from 'http'
 import fileReadHandler from './handlers/fileReadHandler'
 import errorHandler from './handlers/errorHandler'
 import disposeHandler from './handlers/disposeHandler'
+import healthCheckHandler from './handlers/healthCheckHandler'
 import { paramsToObject } from 'skyes/src/tools'
 
 let localServer = {
@@ -26,8 +27,8 @@ const getRequestObject = httpRequest => {
         const [url, params, ...notUsed] = httpRequest.url.split('?')
 
         let requestObject = {
-            url: url.slice(1).endsWith("/") ? url.slice(1).slice(0, -1) : url.slice(1),
-            urlParts: url.slice(1).split('/'),
+            url: (url.slice(1).endsWith("/") ? url.slice(1).slice(0, -1) : url.slice(1)).toLowerCase(),
+            urlParts: url.slice(1).toLowerCase().split('/'),
             paramsObject: paramsToObject(params),
             method: httpRequest.method,
             body: [],
@@ -109,6 +110,10 @@ const globalHandler = async (httpRequest, httpResponse) => {
                 }
                 case 'dispose': {
                     return await disposeHandler(request, response)(httpResponse)
+                    break;
+                }
+                case 'healthcheck': {
+                    await healthCheckHandler(request, response)
                     break;
                 }
                 default: {
