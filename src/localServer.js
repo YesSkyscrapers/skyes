@@ -49,7 +49,11 @@ const getRequestObject = httpRequest => {
         });
         httpRequest.on('end', () => {
             try {
-                requestObject.body = JSON.parse(Buffer.concat(requestObject.body).toString());
+                try {
+                    requestObject.body = JSON.parse(Buffer.concat(requestObject.body).toString());
+                } catch (error) {
+                    requestObject.body = {}
+                }
                 resolve(requestObject);
             } catch (error) {
                 reject(`JSON parse error: ${error}`)
@@ -90,7 +94,6 @@ const globalHandler = async (httpRequest, httpResponse) => {
         const customHandler = handlers.find(handlerObject => {
             return handlerObject.url == request.url
         })
-
         if (customHandler) {
             await customHandler.handler(request, response)
         } else {
