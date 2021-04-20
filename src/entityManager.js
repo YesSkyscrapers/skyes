@@ -64,9 +64,10 @@ const checkEntityDefinition = entityDefinition => {
 
 const mapFilters = filters => {
     let filtersObject = {}
+    let orderObject = {}
 
     if (filters.length == 0) {
-        return null;
+        return [undefined, undefined];
     }
 
     filters.forEach(filter => {
@@ -92,13 +93,19 @@ const mapFilters = filters => {
                 }
                 break;
             }
+            case "order": {
+                orderObject = {
+                    ...orderObject,
+                    [filter.key]: filter.value
+                }
+            }
         }
     })
 
-    return filtersObject;
+    return [filtersObject, orderObject];
 }
 
-entityManager.read = async (entityDefinition, pageSize, pageIndex, filters = []) => {
+entityManager.read = async (entityDefinition, pageSize, pageIndex, filters = [], order = "ASC") => {
     checkConnection();
     checkEntityDefinition(entityDefinition)
 
@@ -109,12 +116,13 @@ entityManager.read = async (entityDefinition, pageSize, pageIndex, filters = [])
         count: 0
     }
 
-    const whereObject = mapFilters(filters)
+    const [whereObject, orderObject] = mapFilters(filters)
 
     result.data = await repository.find({
         skip: pageIndex * pageSize,
         take: pageSize,
-        where: whereObject ? whereObject : undefined
+        where: whereObject ? whereObject : undefined,
+        order: orderObject ? orderObject : undefined
     })
 
     result.count = await repository.count()

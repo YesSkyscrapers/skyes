@@ -30,6 +30,7 @@ declare namespace entityManager {
     function init(ormconfig: any): void;
     function read(entityDefinition: any, pageSize: number, pageIndex: number): Promise<ReadOutput>;
     function read(entityDefinition: any, pageSize: number, pageIndex: number, filters: Array<Filter>): Promise<ReadOutput>;
+    function read(entityDefinition: any, pageSize: number, pageIndex: number, filters: Array<Filter>, order: string): Promise<ReadOutput>;
     function create(entityDefinition: any, entity: any): CreateOutput;
     function update(entityDefinition: any, entity: any): UpdateOutput;
     function deleteEntities(entityDefinition: any, entities: any): DeleteOutput;

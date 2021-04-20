@@ -9,6 +9,7 @@ const DEFAULT_SKYES_CONFIG = {
 const skyes = {
     init: () => { },
     addAction: () => { },
+    addPostAction: () => { },
     addbackgroundProcess: () => { },
 }
 
@@ -44,6 +45,10 @@ skyes.dispose = async () => {
 
 skyes.addAction = (actionName, handler, entityDefinition, method) => {
     localServer.addAction(actionName, handler, entityDefinition, method)
+}
+
+skyes.addPostAction = (actionName, handler, entityDefinition, method) => {
+    localServer.addPostAction(actionName, handler, entityDefinition, method)
 }
 
 skyes.addHandler = (url, handler) => {

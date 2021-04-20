@@ -10,7 +10,8 @@ const handler = (request, response) => {
             const createResult = await entityManager.create(entityDefinition, entity)
 
             response.body = {
-                count: createResult.count
+                count: createResult.count,
+                created: createResult.entity
             }
         } catch (error) {
             await errorHandler(request, response)(`CreateHandler error: ${error}`)

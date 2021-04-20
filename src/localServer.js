@@ -8,8 +8,15 @@ import { paramsToObject } from 'skyes/src/tools'
 let localServer = {
     start: () => { },
     addAction: () => { },
+    addPostAction: () => { },
     addHandler: () => { },
     stop: () => { }
+}
+
+const ACTION_TYPE = {
+    PRE: 0,
+    COMMON: 1,
+    POST: 2
 }
 
 const DEFAULT_SERVER_START_CONFIG = {
@@ -99,15 +106,19 @@ const globalHandler = async (httpRequest, httpResponse) => {
         } else {
             switch (request.url) {
                 case 'action': {
-                    const handler = actionHandlers
-                        .find(handler => {
-                            handler.method = handler.method ? handler.method : "POST"
-                            return handler.method == request.method && handler.action == request.body.action
-                        })
-                    if (handler) {
-                        await handler.handler(request, response)(handler.entityDefinition)
-                    } else {
-                        await errorHandler(request, response)("Action not found")
+                    for await (const key of Object.keys(ACTION_TYPE)) {
+                        const handler = actionHandlers
+                            .find(handler => {
+                                handler.method = handler.method ? handler.method : "POST"
+                                return handler.method == request.method && handler.action == request.body.action && handler.type == ACTION_TYPE[key]
+                            })
+                        if (handler) {
+                            await handler.handler(request, response)(handler.entityDefinition)
+                        } else {
+                            if (ACTION_TYPE[key] == ACTION_TYPE.COMMON) {
+                                await errorHandler(request, response)("Action not found")
+                            }
+                        }
                     }
                     break;
                 }
@@ -186,9 +197,21 @@ localServer.addAction = (actionName, handler, entityDefinition, method) => {
         action: actionName,
         handler,
         entityDefinition,
-        method
+        method,
+        type: ACTION_TYPE.COMMON
     })
 }
+
+localServer.addPostAction = (actionName, handler, entityDefinition, method) => {
+    actionHandlers.push({
+        action: actionName,
+        handler,
+        entityDefinition,
+        method,
+        type: ACTION_TYPE.POST
+    })
+}
+
 localServer.addHandler = (url, handler) => {
     handlers.push({
         url: url,
