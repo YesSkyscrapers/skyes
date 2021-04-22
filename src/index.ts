@@ -5,6 +5,7 @@ import readHandler from './handlers/readHandler'
 import createHandler from './handlers/createHandler'
 import deleteHandler from './handlers/deleteHandler'
 import updateHandler from './handlers/updateHandler'
+import errorHandler from './handlers/errorHandler'
 import { File } from './entities/model/File';
 
 
@@ -13,6 +14,7 @@ const handlers = {
     createHandler,
     deleteHandler,
     updateHandler,
+    errorHandler,
 }
 
 

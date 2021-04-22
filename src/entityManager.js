@@ -1,4 +1,4 @@
-import { createConnection, Equal, ILike, In, Like } from "typeorm";
+import { createConnection, Equal, ILike, In, IsNull, Like, Not } from "typeorm";
 const File = require("./entities/model/File").File
 
 const entityManager = {
@@ -83,6 +83,13 @@ const mapFilters = filters => {
                 filtersObject = {
                     ...filtersObject,
                     [filter.key]: In(filter.value)
+                }
+                break;
+            }
+            case "notnull": {
+                filtersObject = {
+                    ...filtersObject,
+                    [filter.key]: Not(IsNull())
                 }
                 break;
             }
