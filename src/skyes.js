@@ -51,8 +51,8 @@ skyes.addPostAction = (actionName, handler, entityDefinition, method) => {
     localServer.addPostAction(actionName, handler, entityDefinition, method)
 }
 
-skyes.addHandler = (url, handler) => {
-    localServer.addHandler(url, handler)
+skyes.addHandler = (url, handler, useDefaultProcessing = true) => {
+    localServer.addHandler(url, handler, useDefaultProcessing)
 }
 
 skyes.addbackgroundProcess = (processName, func, config) => {

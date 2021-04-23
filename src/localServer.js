@@ -91,63 +91,93 @@ export const processResponse = (httpResponse, responseObject) => {
     httpResponse.end(responseObject.body ? JSON.stringify(responseObject.body) : undefined)
 }
 
+const checkUrlPatterns = (handlerUrl, requestUrl) => {
+    const splittedHandlerUrl = handlerUrl.split('/')
+    const splittedRequestUrl = requestUrl.split('/')
+    if (splittedHandlerUrl.length != splittedRequestUrl.length) {
+        return [false, {}]
+    } else {
+        let result = true;
+        let params = {};
+        splittedHandlerUrl.forEach((handlerPart, index) => {
+            if (handlerPart.startsWith("{") && handlerPart.endsWith("}")) {
+                params[handlerPart.slice(1, -1)] = splittedRequestUrl[index]
+            } else {
+                if (handlerPart != splittedRequestUrl[index]) {
+                    result = false;
+                }
+            }
+        })
+        return [result, params]
+    }
+}
+
+const getDefaultHandlers = (request, response, httpResponse) => {
+    let handlersForRequest = []
+
+    handlersForRequest.push({
+        url: "action",
+        handler: async () => {
+            for await (const key of Object.keys(ACTION_TYPE)) {
+                const handler = actionHandlers
+                    .find(handler => {
+                        handler.method = handler.method ? handler.method : "POST"
+                        return handler.method == request.method && handler.action == request.body.action && handler.type == ACTION_TYPE[key]
+                    })
+                if (handler) {
+                    await handler.handler(request, response)(handler.entityDefinition)
+                } else {
+                    if (ACTION_TYPE[key] == ACTION_TYPE.COMMON) {
+                        await errorHandler(request, response)("Action not found")
+                    }
+                }
+            }
+        },
+        useDefaultProcessing: true
+    })
+    handlersForRequest.push({
+        url: "dispose",
+        handler: async () => {
+            return await disposeHandler(request, httpResponse)
+        },
+        useDefaultProcessing: false
+    })
+    handlersForRequest.push({
+        url: "healthcheck",
+        handler: async () => {
+            await healthCheckHandler(request, response)
+        },
+        useDefaultProcessing: true
+    })
+    handlersForRequest.push({
+        url: "files/{fileId}",
+        handler: async () => {
+            return await fileReadHandler(request, httpResponse)
+        },
+        useDefaultProcessing: false
+    })
+    return handlersForRequest
+}
+
 const globalHandler = async (httpRequest, httpResponse) => {
 
     let response = await createResponseObject()
     let request = null
     try {
         request = await getRequestObject(httpRequest)
+        const handlersForRequest = handlers.concat(getDefaultHandlers(request, response, httpResponse))
+        const customHandler = handlersForRequest.find(handlerObject => {
 
-        const customHandler = handlers.find(handlerObject => {
-            return handlerObject.url == request.url
+            return checkUrlPatterns(handlerObject.url, request.url)[0]
         })
         if (customHandler) {
-            await customHandler.handler(request, response)
-        } else {
-            switch (request.url) {
-                case 'action': {
-                    for await (const key of Object.keys(ACTION_TYPE)) {
-                        const handler = actionHandlers
-                            .find(handler => {
-                                handler.method = handler.method ? handler.method : "POST"
-                                return handler.method == request.method && handler.action == request.body.action && handler.type == ACTION_TYPE[key]
-                            })
-                        if (handler) {
-                            await handler.handler(request, response)(handler.entityDefinition)
-                        } else {
-                            if (ACTION_TYPE[key] == ACTION_TYPE.COMMON) {
-                                await errorHandler(request, response)("Action not found")
-                            }
-                        }
-                    }
-                    break;
-                }
-                case 'dispose': {
-                    return await disposeHandler(request, response)(httpResponse)
-                    break;
-                }
-                case 'healthcheck': {
-                    await healthCheckHandler(request, response)
-                    break;
-                }
-                default: {
-
-                    switch (request.urlParts[0]) {
-
-                        case "files": {
-                            return await fileReadHandler(request, response)(httpResponse)
-                            break;
-                        }
-
-                        default: {
-                            await errorHandler(request, response)("Handler not found")
-                            break;
-                        }
-                    }
-
-                    break;
-                }
+            if (customHandler.useDefaultProcessing) {
+                await customHandler.handler(request, response)
+            } else {
+                return await (await customHandler.handler(request, httpResponse))(checkUrlPatterns(customHandler.url, request.url)[1])
             }
+        } else {
+            await errorHandler(request, response)("Handler not found")
         }
     } catch (_error) {
         const error = `Global handler error: ${_error}`
@@ -212,10 +242,11 @@ localServer.addPostAction = (actionName, handler, entityDefinition, method) => {
     })
 }
 
-localServer.addHandler = (url, handler) => {
+localServer.addHandler = (url, handler, useDefaultProcessing = true) => {
     handlers.push({
         url: url,
-        handler
+        handler,
+        useDefaultProcessing
     })
 }
 

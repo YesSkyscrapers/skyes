@@ -3,24 +3,25 @@ import entityManager from 'skyes/src/entityManager';
 import fileManager from 'skyes/src/fileManager';
 import errorHandler from './errorHandler'
 
-const makeError = (request, response) => async error => {
-    await errorHandler(request, response)(error)
+const makeError = async error => {
     throw error
 }
 
-const handler = (request, response) => {
-    return async (httpResponse) => {
+const handler = (request, httpResponse) => {
+    return async (params) => {
 
-        const fileId = request.urlParts[1];
+        console.log(request, params)
+
+        const fileId = params.fileId;
 
         if (!fileId) {
-            await makeError(request, response)("FileId wrong!")
+            await makeError("FileId wrong!")
         }
 
         try {
             return await fileManager.writeFileToResponse(httpResponse, fileId);
         } catch (_error) {
-            await makeError(request, response)(`FileReadHandler error: ${_error}`)
+            await makeError(`FileReadHandler error: ${_error}`)
         }
     }
 }

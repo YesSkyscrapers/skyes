@@ -10,6 +10,7 @@ declare namespace localServer {
     function addPostAction(actionName: string, handler: Promise<void>, entityDefinition: any, method: string);
     function addPostAction(actionName: string, handler: Promise<void>, entityDefinition: any);
     function addHandler(url: string, handler: Promise<void>);
+    function addHandler(url: string, handler: Promise<void>, useDefaultProcessing: Boolean);
     function stop(): Promise<void>;
 }
 

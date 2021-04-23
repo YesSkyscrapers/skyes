@@ -5,8 +5,8 @@ import skyes from 'skyes/src/skyes';
 import errorHandler from './errorHandler'
 
 
-const handler = (request, response) => {
-    return async (httpResponse) => {
+const handler = (request, httpResponse) => {
+    return async (params) => {
 
         try {
             httpResponse.end("disposing")
@@ -14,7 +14,6 @@ const handler = (request, response) => {
             return;
         } catch (_error) {
             const error = `DisposeHandler error: ${_error}`
-            await errorHandler(request, response)(error)
             throw error;
         }
     }

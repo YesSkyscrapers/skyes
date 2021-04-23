@@ -19,7 +19,8 @@ declare namespace skyes {
     function addAction(actionName: string, handler: (request: Request, response: Response) => ((entityDefinition: any) => Promise<void>), entityDefinition: any);
     function addPostAction(actionName: string, handler: (request: Request, response: Response) => ((entityDefinition: any) => Promise<void>), entityDefinition: any, method: string);
     function addPostAction(actionName: string, handler: (request: Request, response: Response) => ((entityDefinition: any) => Promise<void>), entityDefinition: any);
-    function addHandler(url: string, handler: (request: Request, response: Response) => Promise<void>);
+    function addHandler(url: string, handler: (request: Request, response: Response) => ((entityDefinition: any) => Promise<void>));
+    function addHandler(url: string, handler: (request: Request, response: Response) => ((entityDefinition: any) => Promise<void>), useDefaultProcessing: Boolean);
     function addbackgroundProcess(processName: string, func: () => void, config: backgroundProcessConfig);
 }
 
