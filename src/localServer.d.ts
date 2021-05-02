@@ -1,5 +1,6 @@
 export interface serverStartConfig {
-    port: number
+    port: number,
+    defaultHeaders: any
 }
 
 
