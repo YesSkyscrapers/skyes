@@ -20,7 +20,8 @@ const ACTION_TYPE = {
 }
 
 const DEFAULT_SERVER_START_CONFIG = {
-    port: 3030
+    port: 3030,
+    defaultHeaders: {}
 }
 
 let serverStartConfig = null;
@@ -84,6 +85,9 @@ const createResponseObject = () => {
 }
 
 export const processResponse = (httpResponse, responseObject) => {
+    Object.keys(serverStartConfig.defaultHeaders).forEach(key => {
+        httpResponse.setHeader(key, serverStartConfig.defaultHeaders[key])
+    })
     responseObject.headers.forEach(header => {
         httpResponse.setHeader(header.key, header.value)
     })
