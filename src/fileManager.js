@@ -115,6 +115,37 @@ fileManager.saveFile = async response => {
     }
 }
 
+fileManager.saveBuffer = async (buffer, type) => {
+    try {
+        checkFolderExists()
+
+        const newFileName = getNewFileName();
+        const newFileType = type
+        const newFileExtension = newFileType ? `.${mime.extension(newFileType)}` : ''
+
+        const newFilePath = `${FILES_FOLDER}${newFileName}${newFileExtension}`
+
+
+        await fs.promises.writeFile(newFilePath, buffer)
+
+        let file = new File();
+        file.name = newFileName;
+        file.filepath = newFilePath;
+        file.fileSize = fs.statSync(newFilePath).size;
+        file.date = moment().format();
+        file.type = newFileType;
+
+        const creationResult = await entityManager.create(File, file);
+
+        checkMaxFilesSize()
+
+        return creationResult.entity;
+
+    } catch (error) {
+        throw `Save file error: ${error}`
+    }
+}
+
 fileManager.writeFileToResponse = async (response, fileId) => {
     const readResult = await entityManager.read(File, 1, 0, [{
         type: "equal",

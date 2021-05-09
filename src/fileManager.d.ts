@@ -9,6 +9,7 @@ declare namespace fileManager {
     function init(): void;
     function init(config: fileConfig): void;
     function saveFile(response: Response): Promise<File>;
+    function saveBuffer(buffer: Buffer, type: string): Promise<File>;
     function writeFileToResponse(response: Response, fileId: string)
 }
 
