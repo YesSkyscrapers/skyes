@@ -21,7 +21,7 @@ interface UpdateOutput {
 interface Filter {
     type: string;
     key: string;
-    value: string | string[] | boolean;
+    value: string | string[] | boolean | number | number[] | any;
 }
 
 declare namespace entityManager {
