@@ -10,7 +10,6 @@ const makeError = async error => {
 const handler = (request, httpResponse) => {
     return async (params) => {
 
-        console.log(request, params)
 
         const fileId = params.fileId;
 
