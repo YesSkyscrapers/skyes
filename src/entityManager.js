@@ -1,5 +1,5 @@
 import { createConnection, Equal, ILike, In, IsNull, Like, Not } from "typeorm";
-const File = require("./entities/model/File").File
+import logsManager from "./logsManager";
 
 const entityManager = {
     registerEntity: (type) => { },
@@ -18,13 +18,8 @@ entityManager.registerEntity = (type) => {
 }
 
 entityManager.init = async (ormconfig) => {
-    entityManager.registerEntity(File);
-    const config = {
-        ...ormconfig,
-        entities: ormconfig.entities.concat(require("./entities/schemas/FileSchema"))
-    }
     try {
-        connection = await createConnection(config)
+        connection = await createConnection(ormconfig)
     } catch (error) {
         throw `EntityManager not created connection: ${error}`
     }
@@ -33,7 +28,7 @@ entityManager.init = async (ormconfig) => {
 entityManager.dispose = async () => {
     try {
         await connection.close();
-        console.log('EntityManager connection disposed.')
+        logsManager.info('EntityManager connection disposed.')
     } catch (error) {
         throw `EntityManager connection dispose failed: ${error}`
     }

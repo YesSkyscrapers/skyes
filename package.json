@@ -12,7 +12,7 @@
   "name": "skyes",
   "version": "0.0.1",
   "description": "backend engine",
-  "main": "src/index.ts",
+  "main": "src/index.js",
   "devDependencies": {},
   "repository": {
     "type": "git",

@@ -1,7 +1,6 @@
-import { entityManager } from "skyes";
-import backgroundProcessesManager from "skyes/src/backgroundProcessesManager";
-import fileManager from "skyes/src/fileManager";
+import entityManager from "./entityManager";
 import localServer from "./localServer";
+import logsManager from "./logsManager";
 
 const DEFAULT_SKYES_CONFIG = {
 }
@@ -9,8 +8,8 @@ const DEFAULT_SKYES_CONFIG = {
 const skyes = {
     init: () => { },
     addAction: () => { },
-    addPostAction: () => { },
-    addbackgroundProcess: () => { },
+    addHandler: () => { },
+    entityManager: {}
 }
 
 skyes.init = async (config = {}) => {
@@ -19,44 +18,23 @@ skyes.init = async (config = {}) => {
         ...config
     }
     try {
-        await entityManager.init(skyesConfig.ormconfig);
-        await fileManager.init(skyesConfig.filesConfig);
-        await localServer.start(skyesConfig.serverStartConfig)
+        logsManager.init(skyesConfig.logsConfig)
+        await entityManager.init(skyesConfig.ormconfig)
+        await localServer.start(skyesConfig.serverConfig)
 
     } catch (error) {
         console.log(`Skyes start failed. Error: ${error}`)
     }
-
 }
 
-skyes.dispose = async () => {
-    try {
-        await localServer.stop();
-        await entityManager.dispose();
-        process.exit(0)
-        //filemanager doesnt need be dispose
-    } catch (error) {
-        const _error = `Skyes dispose failed. Error: ${error}`
-        console.log(_error)
-        throw _error
-    }
-
+skyes.addHandler = (handlerParams) => {
+    localServer.addHandler(handlerParams)
 }
 
-skyes.addAction = (actionName, handler, entityDefinition, method) => {
-    localServer.addAction(actionName, handler, entityDefinition, method)
+skyes.addAction = (actionParams) => {
+    localServer.addAction(actionParams)
 }
 
-skyes.addPostAction = (actionName, handler, entityDefinition, method) => {
-    localServer.addPostAction(actionName, handler, entityDefinition, method)
-}
-
-skyes.addHandler = (url, handler, useDefaultProcessing = true) => {
-    localServer.addHandler(url, handler, useDefaultProcessing)
-}
-
-skyes.addbackgroundProcess = (processName, func, config) => {
-    backgroundProcessesManager.addbackgroundProcess(processName, func, config)
-}
+skyes.entityManager = entityManager
 
 export default skyes;

@@ -1,23 +1,24 @@
 import http from 'http'
-import fileReadHandler from './handlers/fileReadHandler'
-import errorHandler from './handlers/errorHandler'
-import disposeHandler from './handlers/disposeHandler'
-import healthCheckHandler from './handlers/healthCheckHandler'
+// import fileReadHandler from './handlers/fileReadHandler'
+// import errorHandler from './handlers/errorHandler'
+// import disposeHandler from './handlers/disposeHandler'
+// import healthCheckHandler from './handlers/healthCheckHandler'
 import { paramsToObject } from 'skyes/src/tools'
+import logsManager from './logsManager';
 
 let localServer = {
     start: () => { },
-    addAction: () => { },
-    addPostAction: () => { },
-    addHandler: () => { },
+    // addAction: () => { },
+    // addPostAction: () => { },
+    // addHandler: () => { },
     stop: () => { }
 }
 
-const ACTION_TYPE = {
-    PRE: 0,
-    COMMON: 1,
-    POST: 2
-}
+// const ACTION_TYPE = {
+//     PRE: 0,
+//     COMMON: 1,
+//     POST: 2
+// }
 
 const DEFAULT_SERVER_START_CONFIG = {
     port: 3030,
@@ -26,7 +27,6 @@ const DEFAULT_SERVER_START_CONFIG = {
 
 let serverStartConfig = null;
 let server = null;
-let actionHandlers = [];
 let handlers = [];
 
 const getRequestObject = httpRequest => {
@@ -116,52 +116,52 @@ const checkUrlPatterns = (handlerUrl, requestUrl) => {
     }
 }
 
-const getDefaultHandlers = (request, response, httpResponse) => {
-    let handlersForRequest = []
+// const getDefaultHandlers = (request, response, httpResponse) => {
+//     let handlersForRequest = []
 
-    handlersForRequest.push({
-        url: "action",
-        handler: async () => {
-            for await (const key of Object.keys(ACTION_TYPE)) {
-                const handler = actionHandlers
-                    .find(handler => {
-                        handler.method = handler.method ? handler.method : "POST"
-                        return handler.method == request.method && handler.action == request.body.action && handler.type == ACTION_TYPE[key]
-                    })
-                if (handler) {
-                    await handler.handler(request, response)(handler.entityDefinition)
-                } else {
-                    if (ACTION_TYPE[key] == ACTION_TYPE.COMMON) {
-                        await errorHandler(request, response)("Action not found")
-                    }
-                }
-            }
-        },
-        useDefaultProcessing: true
-    })
-    handlersForRequest.push({
-        url: "dispose",
-        handler: async () => {
-            return await disposeHandler(request, httpResponse)
-        },
-        useDefaultProcessing: false
-    })
-    handlersForRequest.push({
-        url: "healthcheck",
-        handler: async () => {
-            await healthCheckHandler(request, response)
-        },
-        useDefaultProcessing: true
-    })
-    handlersForRequest.push({
-        url: "files/{fileId}",
-        handler: async () => {
-            return await fileReadHandler(request, httpResponse)
-        },
-        useDefaultProcessing: false
-    })
-    return handlersForRequest
-}
+//     handlersForRequest.push({
+//         url: "action",
+//         handler: async () => {
+//             for await (const key of Object.keys(ACTION_TYPE)) {
+//                 const handler = actionHandlers
+//                     .find(handler => {
+//                         handler.method = handler.method ? handler.method : "POST"
+//                         return handler.method == request.method && handler.action == request.body.action && handler.type == ACTION_TYPE[key]
+//                     })
+//                 if (handler) {
+//                     await handler.handler(request, response)(handler.entityDefinition)
+//                 } else {
+//                     if (ACTION_TYPE[key] == ACTION_TYPE.COMMON) {
+//                         await errorHandler(request, response)("Action not found")
+//                     }
+//                 }
+//             }
+//         },
+//         useDefaultProcessing: true
+//     })
+//     handlersForRequest.push({
+//         url: "dispose",
+//         handler: async () => {
+//             return await disposeHandler(request, httpResponse)
+//         },
+//         useDefaultProcessing: false
+//     })
+//     handlersForRequest.push({
+//         url: "healthcheck",
+//         handler: async () => {
+//             await healthCheckHandler(request, response)
+//         },
+//         useDefaultProcessing: true
+//     })
+//     handlersForRequest.push({
+//         url: "files/{fileId}",
+//         handler: async () => {
+//             return await fileReadHandler(request, httpResponse)
+//         },
+//         useDefaultProcessing: false
+//     })
+//     return handlersForRequest
+// }
 
 const globalHandler = async (httpRequest, httpResponse) => {
 
@@ -217,7 +217,7 @@ localServer.stop = async () => {
     try {
         await new Promise((resolve, reject) => {
             server.close(() => {
-                console.log('Local server stopped')
+                logsManager.info('Local server stopped')
                 resolve();
             })
         })
@@ -226,31 +226,16 @@ localServer.stop = async () => {
     }
 }
 
-localServer.addAction = (actionName, handler, entityDefinition, method) => {
-    actionHandlers.push({
-        action: actionName,
-        handler,
-        entityDefinition,
-        method,
-        type: ACTION_TYPE.COMMON
-    })
-}
 
-localServer.addPostAction = (actionName, handler, entityDefinition, method) => {
-    actionHandlers.push({
-        action: actionName,
-        handler,
-        entityDefinition,
-        method,
-        type: ACTION_TYPE.POST
-    })
-}
-
-localServer.addHandler = (url, handler, useDefaultProcessing = true) => {
+localServer.addHandler = ({
+    url,
+    handler,
+    method
+}) => {
     handlers.push({
-        url: url,
+        url,
         handler,
-        useDefaultProcessing
+        method
     })
 }
 
