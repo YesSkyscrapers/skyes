@@ -30,7 +30,6 @@ export const getRequestObject = httpRequest => {
         httpRequest.on('error', (error) => {
             reject(`Body fetching error: ${error}`)
         });
-
         httpRequest.on('data', chunk => {
             rawBody.push(chunk);
         })
@@ -51,7 +50,7 @@ export const getRequestObject = httpRequest => {
 
 let uniqueId = 0
 
-export const createResponseObject = () => {
+export const createResponseObject = (url) => {
     return new Promise((resolve, reject) => {
         const config = server.getConfig();
 
@@ -70,10 +69,11 @@ export const createResponseObject = () => {
         }
 
         let responseObject = {
+            url: url,
             body: {},
             headers: headers,
             disableProcessing: false,
-            uniqueId: uniqueId++
+            requestId: uniqueId++
         }
 
         resolve(responseObject);

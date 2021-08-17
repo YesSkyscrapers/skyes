@@ -38,7 +38,7 @@ export const globalActionHandler = async ({
             })
 
             if (!response.disableProcessing) {
-                await processResponse(httpResponse, response)
+                await processResponse(httpResponse, response, request)
             }
         } else {
             throw 'Action not found'
@@ -55,13 +55,12 @@ export const globalActionHandler = async ({
     }
 }
 
-export const processResponse = (httpResponse, responseObject) => {
+export const processResponse = (httpResponse, responseObject, request) => {
     responseObject.headers.forEach(header => {
         httpResponse.setHeader(header.key, header.value)
     })
 
-
-    logsManager.logActionResponse(responseObject)
+    logsManager.logActionResponse(responseObject, request)
 
     httpResponse.end(responseObject.body ? JSON.stringify(responseObject.body) : undefined)
 }

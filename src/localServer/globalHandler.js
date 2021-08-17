@@ -34,8 +34,7 @@ const checkActionHandler = () => {
 export const globalHandler = async (httpRequest, httpResponse) => {
 
     checkActionHandler()
-
-    let response = await createResponseObject()
+    let response = await createResponseObject(httpRequest.url)
     let request = null
 
     logsManager.logHandlerRequest(httpRequest, response)

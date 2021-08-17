@@ -20,13 +20,25 @@ export const LOGS_TYPE = {
     CONSOLE: 'console',
 }
 
+export const LOGS_OBJECTS_TYPES = {
+    LOGS: 'LOGS',
+    HANDLERS: 'HANDLERS',
+    ACTIONS: 'ACTIONS',
+}
+
+export const ACTION_LOGS_OBJECTS_TYPES = {
+    REQUEST: 'REQUEST',
+    RESPONSE: 'RESPONSE',
+}
+
 const DEFAULT_LOGS_CONFIG = {
     type: LOGS_TYPE.CONSOLE,
     maxRamLimit: 1000,
     sendingTimeoutDelay: 10000,
     logsUrl: null,
     identityUrl: null,
-    serviceToken: 'stub'
+    serviceToken: 'stub',
+    selfLogging: false
 }
 
 let config = {
@@ -40,6 +52,9 @@ let logsManager = {
     error: () => { },
     fatal: () => { },
     init: () => { },
+    logHandlerRequest: () => { },
+    logActionRequest: () => { },
+    logActionResponse: () => { },
 }
 
 logsManager.debug = (...args) => {
@@ -124,7 +139,8 @@ const sendLog = (level, message) => {
     storage.push({
         logLevel: level,
         log: message,
-        time
+        time,
+        type: LOGS_OBJECTS_TYPES.LOGS
     })
 
     if (storage.length > config.maxRamLimit) {
@@ -149,6 +165,7 @@ const sendingProcess = async () => {
     if (messagesForSend.length > 0) {
         try {
             let serviceInfo = await dataProvider.checkService()
+
             if (serviceInfo.service) {
                 response = await dataProvider.createLog(messagesForSend)
             } else {
@@ -177,27 +194,51 @@ const sendingProcess = async () => {
 }
 
 logsManager.logHandlerRequest = (httpRequest, response) => {
-    let logObject = {
+
+    let time = moment().format()
+
+    storage.push({
         url: httpRequest.url,
-        requestId: response.uniqueId,
-        headers: httpRequest.headers
-    }
+        requestId: `${response.requestId}`,
+        method: httpRequest.method,
+        headers: JSON.stringify(httpRequest.headers),
+        time,
+        type: LOGS_OBJECTS_TYPES.HANDLERS
+    })
 }
 
 logsManager.logActionRequest = (httpRequest, request, response) => {
-    let logObject = {
-        url: httpRequest.url,
-        requestId: response.uniqueId,
-        headers: httpRequest.headers,
-        request
-    }
+
+    let time = moment().format()
+
+    storage.push({
+        url: request.url,
+        actionName: request.body.action,
+        actionType: ACTION_LOGS_OBJECTS_TYPES.REQUEST,
+        body: JSON.stringify(request.body),
+        requestId: `${response.requestId}`,
+        time,
+        type: LOGS_OBJECTS_TYPES.ACTIONS
+    })
 }
 
-logsManager.logActionResponse = (response) => {
-    let logObject = {
-        requestId: response.uniqueId,
-        response
+logsManager.logActionResponse = (response, request) => {
+    let time = moment().format()
+
+    let body = JSON.stringify(response.body);
+    if (config.selfLogging) {
+        body = `cropped: ${body.slice(0, 100)}`
     }
+    storage.push({
+        url: request.url,
+        actionName: request.body.action,
+        actionType: ACTION_LOGS_OBJECTS_TYPES.RESPONSE,
+        body: body,
+        requestId: `${response.requestId}`,
+        headers: JSON.stringify(response.headers),
+        time,
+        type: LOGS_OBJECTS_TYPES.ACTIONS
+    })
 }
 
 export default logsManager
