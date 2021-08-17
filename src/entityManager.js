@@ -95,6 +95,13 @@ const mapFilters = filters => {
                 }
                 break;
             }
+            case "notequal": {
+                filtersObject = {
+                    ...filtersObject,
+                    [filter.key]: Not(Equal(filter.value))
+                }
+                break;
+            }
             case "order": {
                 orderObject = {
                     ...orderObject,

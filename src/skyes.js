@@ -9,7 +9,6 @@ const skyes = {
     init: () => { },
     addAction: () => { },
     addHandler: () => { },
-    entityManager: {}
 }
 
 skyes.init = async (config = {}) => {
@@ -35,6 +34,6 @@ skyes.addAction = (actionParams) => {
     localServer.addAction(actionParams)
 }
 
-skyes.entityManager = entityManager
+
 
 export default skyes;

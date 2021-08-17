@@ -25,6 +25,8 @@ export const globalActionHandler = async ({
 
     try {
 
+        logsManager.logActionRequest(httpRequest, request, response)
+
         let actionHandler = actions.find(_action => _action.name == request.body.action)
         if (actionHandler) {
             await actionHandler.action({
@@ -43,7 +45,7 @@ export const globalActionHandler = async ({
         }
 
     } catch (_error) {
-        const error = `Error: ${_error}`
+        const error = `Error: ${typeof (_error) == 'object' ? JSON.stringify(_error) : _error}`
         logsManager.error(error)
         await errorHandler({
             httpRequest,
@@ -54,12 +56,12 @@ export const globalActionHandler = async ({
 }
 
 export const processResponse = (httpResponse, responseObject) => {
-    // Object.keys(serverStartConfig.defaultHeaders).forEach(key => {
-    //     httpResponse.setHeader(key, serverStartConfig.defaultHeaders[key])
-    // })
     responseObject.headers.forEach(header => {
         httpResponse.setHeader(header.key, header.value)
     })
+
+
+    logsManager.logActionResponse(responseObject)
 
     httpResponse.end(responseObject.body ? JSON.stringify(responseObject.body) : undefined)
 }

@@ -1,5 +1,6 @@
 import moment from 'moment'
 import fetch from 'node-fetch'
+import dataProvider from './dataProvider'
 
 let LOGS_LEVEL = {
     DEBUG: 0,
@@ -13,7 +14,7 @@ const valueOf = (object, value) => {
     return Object.keys(object).find(key => object[key] === value)
 }
 
-const LOGS_TYPE = {
+export const LOGS_TYPE = {
     NONE: 'none',
     LOGGER: 'logger',
     CONSOLE: 'console',
@@ -23,10 +24,9 @@ const DEFAULT_LOGS_CONFIG = {
     type: LOGS_TYPE.CONSOLE,
     maxRamLimit: 1000,
     sendingTimeoutDelay: 10000,
-    logsHandlerUrl: null,
-    logsIdentityHandlerUrl: null,
-    serviceName: 'logger',
-    servicePassword: 'password'
+    logsUrl: null,
+    identityUrl: null,
+    serviceToken: 'stub'
 }
 
 let config = {
@@ -89,13 +89,14 @@ logsManager.init = (logsConfig) => {
         ...logsConfig,
     }
 
-    if (!config.logsHandlerUrl || !config.logsIdentityHandlerUrl) {
+    if (!config.logsUrl || !config.identityUrl) {
         config.type = LOGS_TYPE.CONSOLE
     }
 
-    //dataProvider.init(config)
 
-    //startSendingProcess()
+    if (config.type == LOGS_TYPE.LOGGER) {
+        startSendingProcess(config)
+    }
 }
 
 const log = (level = LOGS_LEVEL.INFO, ...args) => {
@@ -121,8 +122,8 @@ const sendLog = (level, message) => {
     let time = moment().format()
 
     storage.push({
-        level,
-        message,
+        logLevel: level,
+        log: message,
         time
     })
 
@@ -133,25 +134,70 @@ const sendLog = (level, message) => {
 }
 
 
-const startSendingProcess = () => {
-    return sendingProcess()
+const startSendingProcess = (config) => {
+    dataProvider.init(config)
+
+    setTimeout(() => {
+        sendingProcess()
+    }, config.sendingTimeoutDelay)
 }
 
 const sendingProcess = async () => {
     let messagesForSend = [].concat(storage)
     let response = null
-    try {
-        //response = await dataProvider.sendLog(messagesForSend)
-    } catch (error) {
+
+    if (messagesForSend.length > 0) {
+        try {
+            let serviceInfo = await dataProvider.checkService()
+            if (serviceInfo.service) {
+                response = await dataProvider.createLog(messagesForSend)
+            } else {
+                logsManager.error("Logging stopped. Console logs still active.")
+                return;
+            }
+        } catch (error) {
+            logsManager.info(error.message)
+        }
+
+        if (response && response.logs) {
+            storage = storage.slice(messagesForSend.length)
+        } else if (response) {
+            if (response.errorMessage) {
+                logsManager.error(response.errorMessage)
+            } else {
+                logsManager.error("Unknown logs response")
+            }
+        }
     }
 
-    if (response && response.ok) {
-        storage = storage.slice(messagesForSend.length)
-    }
 
     setTimeout(() => {
         sendingProcess()
     }, config.sendingTimeoutDelay)
+}
+
+logsManager.logHandlerRequest = (httpRequest, response) => {
+    let logObject = {
+        url: httpRequest.url,
+        requestId: response.uniqueId,
+        headers: httpRequest.headers
+    }
+}
+
+logsManager.logActionRequest = (httpRequest, request, response) => {
+    let logObject = {
+        url: httpRequest.url,
+        requestId: response.uniqueId,
+        headers: httpRequest.headers,
+        request
+    }
+}
+
+logsManager.logActionResponse = (response) => {
+    let logObject = {
+        requestId: response.uniqueId,
+        response
+    }
 }
 
 export default logsManager

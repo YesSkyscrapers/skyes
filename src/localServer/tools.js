@@ -1,4 +1,5 @@
 import { paramsToObject } from "../tools"
+import server from "./server"
 
 export const getRequestObject = httpRequest => {
     return new Promise((resolve, reject) => {
@@ -48,15 +49,31 @@ export const getRequestObject = httpRequest => {
     })
 }
 
+let uniqueId = 0
+
 export const createResponseObject = () => {
     return new Promise((resolve, reject) => {
+        const config = server.getConfig();
+
+        let headers = []
+        headers.push({
+            key: 'Content-Type',
+            value: 'application/json'
+        })
+        if (config.defaultHeaders) {
+            Object.keys(config.defaultHeaders).forEach(key => {
+                headers.push({
+                    key: key,
+                    value: config.defaultHeaders[key]
+                })
+            })
+        }
+
         let responseObject = {
             body: {},
-            headers: [{
-                key: 'Content-Type',
-                value: 'application/json'
-            }],
-            disableProcessing: false
+            headers: headers,
+            disableProcessing: false,
+            uniqueId: uniqueId++
         }
 
         resolve(responseObject);

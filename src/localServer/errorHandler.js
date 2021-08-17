@@ -1,11 +1,29 @@
+import server from "./server"
+
 export const errorHandler = ({
     httpRequest,
     httpResponse,
     errorMessage
 }) => {
+    const config = server.getConfig()
 
+    let headers = []
+    headers.push({
+        key: 'Content-Type',
+        value: 'application/json'
+    })
+    if (config.defaultHeaders) {
+        Object.keys(config.defaultHeaders).forEach(key => {
+            headers.push({
+                key: key,
+                value: config.defaultHeaders[key]
+            })
+        })
+    }
 
-    httpResponse.setHeader('Content-Type', 'application/json');
+    headers.forEach(header => {
+        httpResponse.setHeader(header.key, header.value);
+    })
 
     httpResponse.end(JSON.stringify({
         errorMessage

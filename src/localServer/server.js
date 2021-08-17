@@ -7,12 +7,16 @@ import http from 'http'
 
 let server = {
     start: () => { },
-    stop: () => { }
+    stop: () => { },
+    getConfig: () => ({})
 }
 
 let serverConfig = null;
 let httpServer = null;
 
+server.getConfig = () => {
+    return serverConfig
+}
 
 server.start = async (config = {}) => {
     try {
