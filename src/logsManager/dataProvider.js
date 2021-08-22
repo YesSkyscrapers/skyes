@@ -15,6 +15,10 @@ const basicFetch = (...params) => {
         return response.json().then(responseJson => {
             return responseJson
         })
+    }).catch(err => {
+        console.log(err)
+        console.log(...params)
+        throw err
     })
 }
 
@@ -38,13 +42,15 @@ let dataProvider = {
         })
     },
     createLog: (logs) => {
+
+
         return basicFetch(`${config.logsUrl}action`, {
             method: 'POST',
             body: JSON.stringify({
                 action: "logs.create",
                 data: {
                     token: config.serviceToken,
-                    logs
+                    logs: logs
                 }
             })
         })

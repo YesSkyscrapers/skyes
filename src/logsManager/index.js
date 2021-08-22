@@ -173,6 +173,8 @@ const sendingProcess = async () => {
                 return;
             }
         } catch (error) {
+            console.log(error)
+            console.log(messagesForSend)
             logsManager.info(error.message)
         }
 
@@ -234,6 +236,7 @@ logsManager.logActionResponse = (response, request) => {
         actionName: request.body.action,
         actionType: ACTION_LOGS_OBJECTS_TYPES.RESPONSE,
         body: body,
+        isError: !!(body.errorMessage),
         requestId: `${response.requestId}`,
         headers: JSON.stringify(response.headers),
         time,

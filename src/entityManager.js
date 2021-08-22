@@ -1,4 +1,4 @@
-import { createConnection, Equal, ILike, In, IsNull, Like, Not } from "typeorm";
+import { createConnection, Equal, MoreThan, MoreThanOrEqual, ILike, In, IsNull, Like, Not } from "typeorm";
 import logsManager from "./logsManager";
 
 const entityManager = {
@@ -8,6 +8,7 @@ const entityManager = {
     create: (entityDefinition, entity) => { },
     update: (entityDefinition, entity) => { },
     deleteEntities: (entityDefinition, entities) => { },
+    count: (entity) => { },
 }
 
 let entities = []
@@ -74,6 +75,20 @@ const mapFilters = filters => {
                 }
                 break;
             }
+            case "morethan": {
+                filtersObject = {
+                    ...filtersObject,
+                    [filter.key]: MoreThan(filter.value)
+                }
+                break;
+            }
+            case "morethanorqueal": {
+                filtersObject = {
+                    ...filtersObject,
+                    [filter.key]: MoreThanOrEqual(filter.value)
+                }
+                break;
+            }
             case "in": {
                 filtersObject = {
                     ...filtersObject,
@@ -134,7 +149,29 @@ entityManager.read = async (entityDefinition, pageSize, pageIndex, filters = [],
         order: orderObject ? orderObject : undefined
     })
 
+
     result.count = await repository.count()
+
+    return result;
+}
+
+entityManager.count = async (entityDefinition, filters = []) => {
+    checkConnection();
+    checkEntityDefinition(entityDefinition)
+
+
+    const repository = connection.getRepository(entityDefinition);
+
+    const [whereObject, orderObject] = mapFilters(filters)
+
+    let result = {
+        count: -1
+    }
+
+    result.count = await repository.count({
+        where: whereObject ? whereObject : undefined,
+        order: orderObject ? orderObject : undefined
+    })
 
     return result;
 }

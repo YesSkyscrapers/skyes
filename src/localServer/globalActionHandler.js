@@ -8,10 +8,12 @@ let actions = []
 export const addAction = ({
     name,
     action,
+    disableLogging,
 }) => {
     actions.push({
         name,
-        action
+        action,
+        disableLogging
     })
 }
 
@@ -24,11 +26,13 @@ export const globalActionHandler = async ({
 }) => {
 
     try {
-
-        logsManager.logActionRequest(httpRequest, request, response)
-
         let actionHandler = actions.find(_action => _action.name == request.body.action)
         if (actionHandler) {
+
+            if (!actionHandler.disableLogging) {
+                logsManager.logActionRequest(httpRequest, request, response)
+            }
+
             await actionHandler.action({
                 httpRequest,
                 request,
@@ -38,9 +42,17 @@ export const globalActionHandler = async ({
             })
 
             if (!response.disableProcessing) {
-                await processResponse(httpResponse, response, request)
+                await processResponse({
+                    httpRequest,
+                    request,
+                    httpResponse,
+                    response,
+                    handlerParams,
+                    actionHandler
+                })
             }
         } else {
+            logsManager.logActionRequest(httpRequest, request, response)
             throw 'Action not found'
         }
 
@@ -55,12 +67,23 @@ export const globalActionHandler = async ({
     }
 }
 
-export const processResponse = (httpResponse, responseObject, request) => {
-    responseObject.headers.forEach(header => {
+export const processResponse = async ({
+    httpRequest,
+    request,
+    httpResponse,
+    response,
+    handlerParams,
+    actionHandler = {}
+}) => {
+
+
+    response.headers.forEach(header => {
         httpResponse.setHeader(header.key, header.value)
     })
 
-    logsManager.logActionResponse(responseObject, request)
+    if (!actionHandler.disableLogging) {
+        logsManager.logActionResponse(response, request)
+    }
 
-    httpResponse.end(responseObject.body ? JSON.stringify(responseObject.body) : undefined)
+    httpResponse.end(response.body ? JSON.stringify(response.body) : undefined)
 }
