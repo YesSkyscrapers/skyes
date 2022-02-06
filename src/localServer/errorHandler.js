@@ -3,7 +3,7 @@ import server from "./server"
 export const errorHandler = ({
     httpRequest,
     httpResponse,
-    errorMessage
+    error
 }) => {
     const config = server.getConfig()
 
@@ -26,6 +26,6 @@ export const errorHandler = ({
     })
 
     httpResponse.end(JSON.stringify({
-        errorMessage
+        error
     }))
 }

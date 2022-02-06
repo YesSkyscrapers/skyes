@@ -2,8 +2,8 @@
 import { paramsToObject } from 'skyes/src/tools'
 import { DEFAULT_SERVER_CONFIG } from './constants';
 import { globalHandler } from './globalHandler';
-import logsManager from '../logsManager';
 import http from 'http'
+import { argv } from 'process';
 
 let server = {
     start: () => { },
@@ -24,13 +24,23 @@ server.start = async (config = {}) => {
             ...DEFAULT_SERVER_CONFIG,
             ...config
         }
+
+
+        let port = serverConfig.defaultPort
+
+        argv.forEach(value => {
+            if (value.includes("-port:")) {
+                port = value.split("-port:")[1]
+            }
+        })
+
         httpServer = http.createServer(globalHandler)
         await new Promise((resolve, reject) => {
-            httpServer.listen(serverConfig.port, error => {
+            httpServer.listen(port, error => {
                 if (error) {
                     reject(`HttpServer listen error: ${error}`)
                 } else {
-                    logsManager.info(`Skyes started on port: ${serverConfig.port}`)
+                    console.log(`Skyes started on port: ${port}`)
                     resolve();
                 }
             })
@@ -44,7 +54,7 @@ server.stop = async () => {
     try {
         await new Promise((resolve, reject) => {
             httpServer.close(() => {
-                logsManager.info('Local server stopped')
+                console.log('Local server stopped')
                 resolve();
             })
         })

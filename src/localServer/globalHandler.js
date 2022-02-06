@@ -1,6 +1,8 @@
-import logsManager from "../logsManager"
+
 import { errorHandler } from "./errorHandler"
 import { globalActionHandler } from "./globalActionHandler"
+import disposeHandler from "../handlers/disposeHandler"
+import healthCheckHandler from "../handlers/healthCheckHandler"
 import { checkUrlPatterns, createResponseObject, getRequestObject } from "./tools"
 
 let handlers = []
@@ -21,7 +23,7 @@ export const addHandler = ({
     }
 }
 
-const checkActionHandler = () => {
+const checkDefaultHandlers = () => {
     if (!handlers.find(handler => handler.url == 'action')) {
         handlers.push({
             url: 'action',
@@ -29,15 +31,29 @@ const checkActionHandler = () => {
             handler: globalActionHandler
         })
     }
+
+    if (!handlers.find(handler => handler.url == 'dispose')) {
+        handlers.push({
+            url: 'dispose',
+            method: 'GET',
+            handler: disposeHandler
+        })
+    }
+
+    if (!handlers.find(handler => handler.url == 'healthcheck')) {
+        handlers.push({
+            url: 'healthcheck',
+            method: 'GET',
+            handler: healthCheckHandler
+        })
+    }
 }
 
 export const globalHandler = async (httpRequest, httpResponse) => {
 
-    checkActionHandler()
+    checkDefaultHandlers()
     let response = await createResponseObject(httpRequest.url)
     let request = null
-
-    logsManager.logHandlerRequest(httpRequest, response)
 
     try {
         request = await getRequestObject(httpRequest)
@@ -55,13 +71,11 @@ export const globalHandler = async (httpRequest, httpResponse) => {
             throw 'Handler not found'
         }
 
-    } catch (_error) {
-        const error = `Error: ${_error}`
-        logsManager.error(error)
+    } catch (error) {
         await errorHandler({
             httpRequest,
             httpResponse,
-            errorMessage: error
+            error
         })
     }
 }

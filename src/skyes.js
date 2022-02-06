@@ -1,6 +1,5 @@
 import entityManager from "./entityManager";
 import localServer from "./localServer";
-import logsManager from "./logsManager";
 
 const DEFAULT_SKYES_CONFIG = {
 }
@@ -9,6 +8,7 @@ const skyes = {
     init: () => { },
     addAction: () => { },
     addHandler: () => { },
+    dispose: () => { }
 }
 
 skyes.init = async (config = {}) => {
@@ -17,7 +17,6 @@ skyes.init = async (config = {}) => {
         ...config
     }
     try {
-        logsManager.init(skyesConfig.logsConfig)
         await entityManager.init(skyesConfig.ormconfig)
         await localServer.start(skyesConfig.serverConfig)
 
@@ -34,6 +33,16 @@ skyes.addAction = (actionParams) => {
     localServer.addAction(actionParams)
 }
 
+skyes.dispose = async () => {
+
+    try {
+        await entityManager.dispose()
+        await localServer.stop()
+
+    } catch (error) {
+        console.log(`Skyes start failed. Error: ${error}`)
+    }
+}
 
 
 export default skyes;

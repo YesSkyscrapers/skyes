@@ -1,5 +1,4 @@
 
-import skyes from 'skyes/src/skyes';
 
 
 const handler = async ({
@@ -10,11 +9,10 @@ const handler = async ({
     handlerParams
 }) => {
     try {
-        httpResponse.end("disposing")
-        skyes.dispose();
+        httpResponse.end("ok")
         return;
     } catch (_error) {
-        const error = `DisposeHandler error: ${_error}`
+        const error = `HealthCheckHandler error: ${_error}`
         throw error;
     }
 }

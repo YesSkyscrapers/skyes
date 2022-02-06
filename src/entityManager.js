@@ -1,5 +1,5 @@
 import { createConnection, Equal, MoreThan, MoreThanOrEqual, ILike, In, IsNull, Like, Not } from "typeorm";
-import logsManager from "./logsManager";
+
 
 const entityManager = {
     registerEntity: (type) => { },
@@ -9,6 +9,7 @@ const entityManager = {
     update: (entityDefinition, entity) => { },
     deleteEntities: (entityDefinition, entities) => { },
     count: (entity) => { },
+    dispose: () => { }
 }
 
 let entities = []
@@ -29,7 +30,7 @@ entityManager.init = async (ormconfig) => {
 entityManager.dispose = async () => {
     try {
         await connection.close();
-        logsManager.info('EntityManager connection disposed.')
+        console.log('EntityManager connection disposed.')
     } catch (error) {
         throw `EntityManager connection dispose failed: ${error}`
     }

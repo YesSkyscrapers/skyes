@@ -1,4 +1,4 @@
-import logsManager from "../logsManager"
+
 import { errorHandler } from "./errorHandler"
 import { createResponseObject, getRequestObject } from "./tools"
 
@@ -29,9 +29,7 @@ export const globalActionHandler = async ({
         let actionHandler = actions.find(_action => _action.name == request.body.action)
         if (actionHandler) {
 
-            if (!actionHandler.disableLogging) {
-                logsManager.logActionRequest(httpRequest, request, response)
-            }
+
 
             await actionHandler.action({
                 httpRequest,
@@ -52,17 +50,15 @@ export const globalActionHandler = async ({
                 })
             }
         } else {
-            logsManager.logActionRequest(httpRequest, request, response)
             throw 'Action not found'
         }
 
-    } catch (_error) {
-        const error = `Error: ${typeof (_error) == 'object' ? JSON.stringify(_error) : _error}`
-        logsManager.error(error)
+    } catch (error) {
+        console.log(error)
         await errorHandler({
             httpRequest,
             httpResponse,
-            errorMessage: error
+            error
         })
     }
 }
@@ -81,9 +77,6 @@ export const processResponse = async ({
         httpResponse.setHeader(header.key, header.value)
     })
 
-    if (!actionHandler.disableLogging) {
-        logsManager.logActionResponse(response, request)
-    }
 
     httpResponse.end(response.body ? JSON.stringify(response.body) : undefined)
 }
