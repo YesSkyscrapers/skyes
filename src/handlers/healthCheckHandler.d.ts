@@ -1,7 +1,21 @@
-import { Response as HttpResponse } from 'node-fetch';
-import { Request } from 'skyes/src/definitions/request';
-import { Response } from 'skyes/src/definitions/response';
+import { IncomingMessage, OutgoingMessage } from 'http'
+import { RequestObject, ResponseObject } from '../localServer/tools';
 
+interface HttpRequest extends IncomingMessage {
 
-export declare function handler(request: Request, response: Response):
-    (Promise<void>);
+}
+
+interface HttpResponse extends OutgoingMessage {
+
+}
+
+interface HandlerParams {
+    httpRequest: HttpRequest;
+    request: RequestObject;
+    httpResponse: HttpResponse;
+    response: ResponseObject;
+    handlerParams: any;
+}
+
+export default handler;
+declare function handler(params: HandlerParams): Promise<void>;
