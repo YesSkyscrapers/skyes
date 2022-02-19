@@ -1,6 +1,6 @@
 import server from "./server"
 
-export const errorHandler = ({
+export const errorHandler = async ({
     httpRequest,
     httpResponse,
     error

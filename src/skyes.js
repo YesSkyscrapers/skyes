@@ -1,48 +1,50 @@
 import entityManager from "./entityManager";
 import localServer from "./localServer";
 
-const DEFAULT_SKYES_CONFIG = {
-}
 
-const skyes = {
-    init: () => { },
-    addAction: () => { },
-    addHandler: () => { },
-    dispose: () => { }
-}
-
-skyes.init = async (config = {}) => {
-    let skyesConfig = {
-        ...DEFAULT_SKYES_CONFIG,
-        ...config
-    }
-    try {
-        await entityManager.init(skyesConfig.ormconfig)
-        await localServer.start(skyesConfig.serverConfig)
-
-    } catch (error) {
-        console.log(`Skyes start failed. Error: ${error}`)
+class Config {
+    constructor(props = {}){
+        this.ormconfig= props.ormconfig 
+        this.serverConfig = props.serverConfig 
     }
 }
 
-skyes.addHandler = (handlerParams) => {
-    localServer.addHandler(handlerParams)
-}
+class Skyes {
+    constructor(){
+        this.skyesConfig = new Config()
+    }
 
-skyes.addAction = (actionParams) => {
-    localServer.addAction(actionParams)
-}
+    init = async (config = {}) => {
+        
+        this.skyesConfig = new Config(config)
 
-skyes.dispose = async () => {
+        try {
+            await entityManager.init(this.skyesConfig.ormconfig)
+            await localServer.start(this.skyesConfig.serverConfig)
+        } catch (error) {
+            console.log(`Skyes start failed. Error: ${error}`)
+        }
+    }
 
-    try {
-        await entityManager.dispose()
-        await localServer.stop()
+    addHandler = (handlerParams) => {
+        localServer.addHandler(handlerParams)
+    }
 
-    } catch (error) {
-        console.log(`Skyes start failed. Error: ${error}`)
+    addAction = (actionParams) => {
+        localServer.addAction(actionParams)
+    }
+
+    dispose = async () => {
+
+        try {
+            await entityManager.dispose()
+            await localServer.stop()
+        } catch (error) {
+            console.log(`Skyes start failed. Error: ${error}`)
+        }
     }
 }
 
+let skyes = new Skyes();
 
-export default skyes;
+export default skyes

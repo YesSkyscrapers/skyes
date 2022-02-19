@@ -7,7 +7,7 @@ import { checkUrlPatterns, createResponseObject, getRequestObject } from "./tool
 
 let handlers = []
 
-export const addHandler = ({
+const addHandler = ({
     url,
     method,
     handler
@@ -49,9 +49,10 @@ const checkDefaultHandlers = () => {
     }
 }
 
-export const globalHandler = async (httpRequest, httpResponse) => {
+const globalHandler = async (httpRequest, httpResponse) => {
 
     checkDefaultHandlers()
+    
     let response = await createResponseObject(httpRequest.url)
     let request = null
 
@@ -78,4 +79,9 @@ export const globalHandler = async (httpRequest, httpResponse) => {
             error
         })
     }
+}
+
+export {
+    globalHandler,
+    addHandler
 }

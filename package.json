@@ -3,17 +3,21 @@
     "esm": "^3.2.25",
     "mime-types": "^2.1.30",
     "moment": "^2.29.1",
+    "typeorm": "^0.2.43",
     "uuid": "^8.3.2"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node -r esm index.js"
+    "start": "node -r esm index.js",
+    "generateTsDescriptions": "npx -p typescript tsc src/index.js --declaration --allowJs --emitDeclarationOnly --outDir types"
   },
   "name": "skyes",
-  "version": "0.0.1",
+  "version": "2.0.0",
   "description": "backend engine",
   "main": "src/index.js",
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/node": "^17.0.18"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/YesSkyscrapers/skyes.git"

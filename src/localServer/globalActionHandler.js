@@ -7,13 +7,11 @@ let actions = []
 
 export const addAction = ({
     name,
-    action,
-    disableLogging,
+    action
 }) => {
     actions.push({
         name,
-        action,
-        disableLogging
+        action
     })
 }
 
@@ -28,9 +26,6 @@ export const globalActionHandler = async ({
     try {
         let actionHandler = actions.find(_action => _action.name == request.body.action)
         if (actionHandler) {
-
-
-
             await actionHandler.action({
                 httpRequest,
                 request,
@@ -45,8 +40,7 @@ export const globalActionHandler = async ({
                     request,
                     httpResponse,
                     response,
-                    handlerParams,
-                    actionHandler
+                    handlerParams
                 })
             }
         } else {
@@ -54,7 +48,6 @@ export const globalActionHandler = async ({
         }
 
     } catch (error) {
-        console.log(error)
         await errorHandler({
             httpRequest,
             httpResponse,
@@ -69,7 +62,6 @@ export const processResponse = async ({
     httpResponse,
     response,
     handlerParams,
-    actionHandler = {}
 }) => {
 
 

@@ -1,7 +1,7 @@
 import { paramsToObject } from "../tools"
 import server from "./server"
 
-export const getRequestObject = httpRequest => {
+const getRequestObject = httpRequest => {
     return new Promise((resolve, reject) => {
         const [_url, params, ...notUsed] = httpRequest.url.split('?')
 
@@ -50,8 +50,9 @@ export const getRequestObject = httpRequest => {
 
 let uniqueId = 0
 
-export const createResponseObject = (url) => {
+const createResponseObject = (url) => {
     return new Promise((resolve, reject) => {
+        
         const config = server.getConfig();
 
         let headers = []
@@ -80,7 +81,7 @@ export const createResponseObject = (url) => {
     })
 }
 
-export const checkUrlPatterns = (handlerUrl, requestUrl) => {
+const checkUrlPatterns = (handlerUrl, requestUrl) => {
     const splittedHandlerUrl = handlerUrl.split('/')
     const splittedRequestUrl = requestUrl.split('/')
     if (splittedHandlerUrl.length != splittedRequestUrl.length) {
@@ -102,4 +103,10 @@ export const checkUrlPatterns = (handlerUrl, requestUrl) => {
         })
         return { result, params }
     }
+}
+
+export {
+    createResponseObject,
+    getRequestObject,
+    checkUrlPatterns
 }

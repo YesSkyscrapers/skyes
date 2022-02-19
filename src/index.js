@@ -1,7 +1,5 @@
-import skyes from 'skyes/src/skyes'
+import skyes from './skyes'
 import entityManager from './entityManager'
-
-
 
 
 export {
