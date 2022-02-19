@@ -11,7 +11,7 @@ interface HttpResponse extends OutgoingMessage {
 
 interface AddActionParams {
     name: string;
-    action: string;
+    action: globalActionHandler;
 }
 
 export function addAction(params: AddActionParams): void;

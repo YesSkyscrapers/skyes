@@ -11,7 +11,7 @@ interface HttpResponse extends OutgoingMessage {
 interface AddHandlerParams {
     url: string;
     method: string;
-    handler: Promise<any>;
+    handler: globalHandler;
 }
 
 export function addHandler(params: AddHandlerParams): void;
