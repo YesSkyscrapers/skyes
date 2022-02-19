@@ -1,6 +1,3 @@
-
-export declare function objectToParams(object: any): string;
-
-export declare function paramsToObject(params: string): any;
-
-export declare function waitFor(delay: number): Promise<void>;
+export function objectToParams(object: any): string;
+export function paramsToObject(params: string): any;
+export function waitFor(delay: number): Promise<void>;
