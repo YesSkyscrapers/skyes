@@ -116,6 +116,24 @@ class EntityManager {
         return result;
     }
 
+    createEntities = async (
+        entityClass,
+        entities
+    ) => {
+        this.checkConnection();
+
+        const repository = this.connection.getRepository(entityClass);
+        let result = {
+            entities: null,
+            count: -1
+        }
+
+        result.entities = await repository.save(entities)
+        result.count = await repository.count()
+
+        return result;
+    }
+
     deleteEntities = async (
         entityClass,
         entities = []

@@ -42,6 +42,7 @@ declare class EntityManager {
     read<T>(entityClass: new () => T, pagination: PaginationSettings, filters: Filters): Promise<ReadResult<T>>;
     count(entityClass: any, filters: Filters): Promise<CountResult>;
     create<T>(entityClass: new () => T, entity: any): Promise<CreateResult<T>>;
+    createEntities<T>(entityClass: new () => T, entities: Array<any>): Promise<CreateResult<T>>;
     deleteEntities(entityClass: any, entities: Array<any>): Promise<DeleteResult>;
     updateEntity<T>(entityClass: new () => T, entity: any): Promise<UpdateResult<T>>;
     getRepository<T>(entityClass: T): Promise<Repository<T>>;

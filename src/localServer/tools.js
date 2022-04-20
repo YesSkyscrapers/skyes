@@ -52,7 +52,7 @@ let uniqueId = 0
 
 const createResponseObject = (url) => {
     return new Promise((resolve, reject) => {
-        
+
         const config = server.getConfig();
 
         let headers = []
