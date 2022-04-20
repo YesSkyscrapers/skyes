@@ -57,14 +57,12 @@ class EntityManager {
         }
 
         const { whereObject, orderObject } = mapFilters(filters)
-
         result.data = await repository.find({
             skip: pagination.pageIndex * pagination.pageSize,
             take: pagination.pageSize,
             where: whereObject ? whereObject : undefined,
             order: orderObject ? orderObject : undefined
         })
-
 
         result.count = await repository.count({
             skip: pagination.pageIndex * pagination.pageSize,
@@ -146,7 +144,7 @@ class EntityManager {
             count: -1
         }
 
-        await repository.remove(entities)
+        await repository.delete(entities)
 
         result.count = await repository.count()
 
