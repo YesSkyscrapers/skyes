@@ -26,6 +26,6 @@ export const errorHandler = async ({
     })
 
     httpResponse.end(JSON.stringify({
-        error: error.message
+        error: error.message ? error.message : error
     }))
 }
