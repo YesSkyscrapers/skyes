@@ -33,6 +33,7 @@ interface CheckUrlResult {
 export function createResponseObject(url: string): Promise<ResponseObject>;
 
 export function getRequestObject(httpRequest: HttpRequest): Promise<RequestObject>;
+export function getRequestInfo(httpRequest: HttpRequest): Promise<RequestObject>;
 
 export function checkUrlPatterns(handlerUrl: string, requestUrl: string): CheckUrlResult;
 

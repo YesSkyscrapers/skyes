@@ -1,6 +1,31 @@
 import { paramsToObject } from "../tools"
 import server from "./server"
 
+const getRequestInfo = httpRequest => {
+    return new Promise((resolve, reject) => {
+        const [_url, params, ...notUsed] = httpRequest.url.split('?')
+
+        let url = _url
+        if (url.startsWith('/')) {
+            url = url.slice(1)
+        }
+        if (url.endsWith('/')) {
+            url = url.slice(0, -1)
+        }
+
+        let requestObject = {
+            url: url,
+            paramsObject: paramsToObject(params),
+            method: httpRequest.method,
+            headers: [],
+            body: {}
+        }
+
+        resolve(requestObject);
+    })
+}
+
+
 const getRequestObject = httpRequest => {
     return new Promise((resolve, reject) => {
         const [_url, params, ...notUsed] = httpRequest.url.split('?')
@@ -108,5 +133,6 @@ const checkUrlPatterns = (handlerUrl, requestUrl) => {
 export {
     createResponseObject,
     getRequestObject,
-    checkUrlPatterns
+    checkUrlPatterns,
+    getRequestInfo
 }
