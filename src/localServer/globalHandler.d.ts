@@ -12,6 +12,7 @@ interface AddHandlerParams {
     url: string;
     method: string;
     handler: globalHandler;
+    parseBody: boolean;
 }
 
 export function addHandler(params: AddHandlerParams): void;
