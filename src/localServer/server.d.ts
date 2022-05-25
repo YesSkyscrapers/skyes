@@ -13,5 +13,6 @@ declare class Server {
 export declare interface Config {
     defaultHeaders: any;
     defaultPort: number;
+    subUrl: string;
 }
 

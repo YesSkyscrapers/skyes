@@ -3,19 +3,19 @@ import localServer from "./localServer";
 
 
 class Config {
-    constructor(props = {}){
-        this.ormconfig= props.ormconfig 
-        this.serverConfig = props.serverConfig 
+    constructor(props = {}) {
+        this.ormconfig = props.ormconfig
+        this.serverConfig = props.serverConfig
     }
 }
 
 class Skyes {
-    constructor(){
+    constructor() {
         this.skyesConfig = new Config()
     }
 
     init = async (config = {}) => {
-        
+
         this.skyesConfig = new Config(config)
 
         try {
