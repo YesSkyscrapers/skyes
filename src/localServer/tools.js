@@ -107,8 +107,12 @@ const createResponseObject = (url) => {
 }
 
 const checkUrlPatterns = (handlerUrl, requestUrl) => {
+    const config = server.getConfig();
+    const subUrl = config.subUrl;
+    let _requestUrl = requestUrl.startsWith(subUrl) ? requestUrl.slice(subUrl.length) : requestUrl
+
     const splittedHandlerUrl = handlerUrl.split('/')
-    const splittedRequestUrl = requestUrl.split('/')
+    const splittedRequestUrl = _requestUrl.split('/')
     if (splittedHandlerUrl.length != splittedRequestUrl.length) {
         return {
             result: false,

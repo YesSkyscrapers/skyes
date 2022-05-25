@@ -4,9 +4,10 @@ import http from 'http'
 import { argv } from 'process';
 
 class Config {
-    constructor(props = {}){
-        this.defaultHeaders= props.defaultHeaders || {}
+    constructor(props = {}) {
+        this.defaultHeaders = props.defaultHeaders || {}
         this.defaultPort = props.defaultPort || 3030
+        this.subUrl = props.subUrl || ""
     }
 }
 
