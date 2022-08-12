@@ -32,7 +32,7 @@ interface DeleteResult {
 }
 
 interface UpdateResult<T> {
-    entity: T
+    data: T
 }
 
 declare class EntityManager {

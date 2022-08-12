@@ -144,7 +144,7 @@ class EntityManager {
             count: -1
         }
 
-        await repository.delete(entities)
+        await repository.remove(entities)
 
         result.count = await repository.count()
 
