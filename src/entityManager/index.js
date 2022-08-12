@@ -143,8 +143,8 @@ class EntityManager {
         let result = {
             count: -1
         }
-
-        await repository.remove(entities)
+        
+        await repository.delete(entities)
 
         result.count = await repository.count()
 
