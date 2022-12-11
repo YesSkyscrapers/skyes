@@ -12,7 +12,7 @@
     "generateTsDescriptions": "npx -p typescript tsc src/index.js --declaration --allowJs --emitDeclarationOnly --outDir types"
   },
   "name": "skyes",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "description": "backend engine",
   "main": "src/index.js",
   "devDependencies": {
