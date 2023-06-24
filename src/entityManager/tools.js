@@ -1,7 +1,6 @@
-import { Equal, MoreThan, MoreThanOrEqual, In, IsNull, Like, Not } from "typeorm";
+import { Equal, MoreThan, MoreThanOrEqual, LessThanOrEqual, LessThan, In, IsNull, Like, Not } from 'typeorm'
 
-
-const mapFilters = filters => {
+const mapFilters = (filters) => {
     let whereObject = {}
     let orderObject = {}
 
@@ -12,58 +11,72 @@ const mapFilters = filters => {
         }
     }
 
-    filters.forEach(filter => {
+    filters.forEach((filter) => {
         switch (filter.type) {
-            case "like": {
+            case 'like': {
                 whereObject = {
                     ...whereObject,
                     [filter.key]: Like(filter.value)
                 }
-                break;
+                break
             }
-            case "morethan": {
+            case 'morethan': {
                 whereObject = {
                     ...whereObject,
                     [filter.key]: MoreThan(filter.value)
                 }
-                break;
+                break
             }
-            case "morethanorqueal": {
+            case 'morethanorqueal': {
                 whereObject = {
                     ...whereObject,
                     [filter.key]: MoreThanOrEqual(filter.value)
                 }
-                break;
+                break
             }
-            case "in": {
+            case 'lessthan': {
+                whereObject = {
+                    ...whereObject,
+                    [filter.key]: LessThan(filter.value)
+                }
+                break
+            }
+            case 'lessthanorqueal': {
+                whereObject = {
+                    ...whereObject,
+                    [filter.key]: LessThanOrEqual(filter.value)
+                }
+                break
+            }
+            case 'in': {
                 whereObject = {
                     ...whereObject,
                     [filter.key]: In(filter.value)
                 }
-                break;
+                break
             }
-            case "notnull": {
+            case 'notnull': {
                 whereObject = {
                     ...whereObject,
                     [filter.key]: Not(IsNull())
                 }
-                break;
+                break
             }
-            case "equal": {
+            case 'equal': {
                 whereObject = {
                     ...whereObject,
                     [filter.key]: Equal(filter.value)
                 }
-                break;
+                break
             }
-            case "notequal": {
+            case 'notequal': {
                 whereObject = {
                     ...whereObject,
                     [filter.key]: Not(Equal(filter.value))
                 }
-                break;
+                break
             }
-            case "order": {
+            case 'order': {
                 orderObject = {
                     ...orderObject,
                     [filter.key]: filter.value
@@ -78,6 +91,4 @@ const mapFilters = filters => {
     }
 }
 
-export {
-    mapFilters
-}
+export { mapFilters }
