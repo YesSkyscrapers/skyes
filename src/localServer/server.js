@@ -1,7 +1,7 @@
 import { globalHandler } from './globalHandler'
 import http from 'http'
 import { argv } from 'process'
-import * as moment from 'moment'
+const moment = require('moment')
 
 class Config {
     constructor(props = {}) {
