@@ -62,6 +62,13 @@ const mapFilters = (filters) => {
                 }
                 break
             }
+            case 'null': {
+                whereObject = {
+                    ...whereObject,
+                    [filter.key]: IsNull()
+                }
+                break
+            }
             case 'equal': {
                 whereObject = {
                     ...whereObject,

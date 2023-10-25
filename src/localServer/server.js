@@ -33,15 +33,15 @@ class Server {
             await new Promise((resolve, reject) => {
                 this.httpServer.listen(port, (error) => {
                     if (error) {
-                        reject(`${moment().format('HH:mm:ss')}: HttpServer listen error: ${error}`)
+                        reject(`${moment().format('DD.MM HH:mm:ss')}: HttpServer listen error: ${error}`)
                     } else {
-                        console.log(`${moment().format('HH:mm:ss')}: Skyes started on port: ${port}`)
+                        console.log(`${moment().format('DD.MM HH:mm:ss')}: Skyes started on port: ${port}`)
                         resolve()
                     }
                 })
             })
         } catch (error) {
-            throw `${moment().format('HH:mm:ss')}: Server start failed with error: ${error}`
+            throw `${moment().format('DD.MM HH:mm:ss')}: Server start failed with error: ${error}`
         }
     }
 
