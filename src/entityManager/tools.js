@@ -1,4 +1,4 @@
-import { Equal, MoreThan, MoreThanOrEqual, LessThanOrEqual, LessThan, In, IsNull, Like, Not } from 'typeorm'
+import { Equal, MoreThan, MoreThanOrEqual, LessThanOrEqual, LessThan, In, IsNull, Like, Not, Between } from 'typeorm'
 
 const mapFilters = (filters) => {
     let whereObject = {}
@@ -45,6 +45,13 @@ const mapFilters = (filters) => {
                 whereObject = {
                     ...whereObject,
                     [filter.key]: LessThanOrEqual(filter.value)
+                }
+                break
+            }
+            case 'between': {
+                whereObject = {
+                    ...whereObject,
+                    [filter.key]: Between(filter.value[0], filter.value[1])
                 }
                 break
             }
