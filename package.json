@@ -3,20 +3,19 @@
         "esm": "^3.2.25",
         "mime-types": "^2.1.30",
         "moment": "^2.29.1",
-        "typeorm": "^0.2.43",
+        "typeorm": "^0.3.20",
         "uuid": "^8.3.2"
     },
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "node -r esm index.js",
-        "generateTsDescriptions": "npx -p typescript tsc src/index.js --declaration --allowJs --emitDeclarationOnly --outDir types"
+        "build": "yarn tsc -d -p tsconfig.json"
     },
     "name": "skyes",
-    "version": "2.3.7",
+    "version": "2.3.8",
     "description": "backend engine",
-    "main": "src/index.js",
+    "main": "lib/index.js",
     "devDependencies": {
-        "@types/node": "^17.0.18"
+        "@types/node": "^20.0.0",
+        "typescript": "^5.3.3"
     },
     "repository": {
         "type": "git",
