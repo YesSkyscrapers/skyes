@@ -141,8 +141,8 @@ class EntityManager {
         this.checkConnection()
 
         const repository = this.connection?.getRepository(entityClass)
+        const entityInDb = await repository!.findOne({ where: { id: entity.id } })
 
-        const entityInDb = await repository!.findOne(entity.id)
         const newEntity = {
             ...entityInDb,
             ...entity
@@ -151,9 +151,8 @@ class EntityManager {
         await repository!.save(newEntity)
 
         let result: UpdateResult<T> = {
-            data: (await repository!.findOne(entity.id)) as T
+            data: (await repository!.findOne({ where: { id: entity.id } })) as T
         }
-
         return result
     }
 
