@@ -1,6 +1,21 @@
 import { Equal, MoreThan, MoreThanOrEqual, LessThanOrEqual, LessThan, In, IsNull, Like, Not, Between } from 'typeorm'
 import { Filters, MapResult } from '../interfaces/interfaces'
 
+const FilterTypes = {
+    LIKE: 'like',
+    MORE_THAN: 'morethan',
+    MORE_THAN_OR_EQUAL: 'morethanorqueal',
+    LESS_THAN: 'lessthan',
+    LESS_THAN_OR_EQUAL: 'lessthanorqueal',
+    BETWEEN: 'between',
+    IN: 'in',
+    NOT_NULL: 'notnull',
+    NULL: 'null',
+    EQUAL: 'equal',
+    NOT_EQUAL: 'notequal',
+    ORDER: 'order'
+}
+
 const mapFilters = (filters: Filters) => {
     let whereObject = {}
     let orderObject = {}
@@ -14,84 +29,84 @@ const mapFilters = (filters: Filters) => {
 
     filters.forEach((filter) => {
         switch (filter.type) {
-            case 'like': {
+            case FilterTypes.LIKE: {
                 whereObject = {
                     ...whereObject,
                     [filter.key]: Like(filter.value)
                 }
                 break
             }
-            case 'morethan': {
+            case FilterTypes.MORE_THAN: {
                 whereObject = {
                     ...whereObject,
                     [filter.key]: MoreThan(filter.value)
                 }
                 break
             }
-            case 'morethanorqueal': {
+            case FilterTypes.MORE_THAN_OR_EQUAL: {
                 whereObject = {
                     ...whereObject,
                     [filter.key]: MoreThanOrEqual(filter.value)
                 }
                 break
             }
-            case 'lessthan': {
+            case FilterTypes.LESS_THAN: {
                 whereObject = {
                     ...whereObject,
                     [filter.key]: LessThan(filter.value)
                 }
                 break
             }
-            case 'lessthanorqueal': {
+            case FilterTypes.LESS_THAN_OR_EQUAL: {
                 whereObject = {
                     ...whereObject,
                     [filter.key]: LessThanOrEqual(filter.value)
                 }
                 break
             }
-            case 'between': {
+            case FilterTypes.BETWEEN: {
                 whereObject = {
                     ...whereObject,
                     [filter.key]: Between(filter.value[0], filter.value[1])
                 }
                 break
             }
-            case 'in': {
+            case FilterTypes.IN: {
                 whereObject = {
                     ...whereObject,
                     [filter.key]: In(filter.value)
                 }
                 break
             }
-            case 'notnull': {
+            case FilterTypes.NOT_NULL: {
                 whereObject = {
                     ...whereObject,
                     [filter.key]: Not(IsNull())
                 }
                 break
             }
-            case 'null': {
+            case FilterTypes.NULL: {
                 whereObject = {
                     ...whereObject,
                     [filter.key]: IsNull()
                 }
                 break
             }
-            case 'equal': {
+            case FilterTypes.EQUAL: {
                 whereObject = {
                     ...whereObject,
                     [filter.key]: Equal(filter.value)
                 }
                 break
             }
-            case 'notequal': {
+            case FilterTypes.NOT_EQUAL: {
                 whereObject = {
                     ...whereObject,
                     [filter.key]: Not(Equal(filter.value))
                 }
                 break
             }
-            case 'order': {
+            case FilterTypes.ORDER: {
                 orderObject = {
                     ...orderObject,
                     [filter.key]: filter.value
@@ -108,4 +123,4 @@ const mapFilters = (filters: Filters) => {
     return result
 }
 
-export { mapFilters }
+export { mapFilters, FilterTypes }
