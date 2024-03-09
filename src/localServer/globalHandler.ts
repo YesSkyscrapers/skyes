@@ -60,9 +60,12 @@ const globalHandler = async (httpRequest: IncomingMessage, httpResponse: Outgoin
     const info = await getRequestInfo(httpRequest)
 
     try {
-        const handler = handlers.find(
-            (_handler) => _handler.method == info.method && checkUrlPatterns(_handler.url, info.url).result
-        )
+        const handler = handlers.find((_handler) => {
+            return (
+                (!_handler.method || (_handler.method == info.method && !!_handler.method)) &&
+                checkUrlPatterns(_handler.url, info.url).result
+            )
+        })
         if (handler) {
             if (handler.parseBody || handler.parseBody == undefined) {
                 request = await getRequestObject(httpRequest)
