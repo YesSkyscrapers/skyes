@@ -84,7 +84,7 @@ interface ProcessResponseParams {
 
 interface AddHandlerParams {
     url: string
-    method: string
+    method?: string | undefined | null
     handler: (params: GlobalActionHandlerParams) => Promise<void>
     parseBody?: boolean | undefined | null
 }
