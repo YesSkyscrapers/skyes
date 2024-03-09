@@ -10,8 +10,12 @@ class Skyes {
         this.skyesConfig = config
 
         try {
-            await entityManager.init(this.skyesConfig!.ormconfig)
-            await localServer.start(this.skyesConfig!.serverConfig)
+            if (this.skyesConfig!.ormconfig) {
+                await entityManager.init(this.skyesConfig!.ormconfig)
+            }
+            if (this.skyesConfig!.serverConfig) {
+                await localServer.start(this.skyesConfig!.serverConfig)
+            }
         } catch (error) {
             console.log(`Skyes start failed. Error: ${error}`)
         }

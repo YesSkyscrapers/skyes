@@ -120,8 +120,8 @@ type TypeOfSplittedParsedObject = {
 }
 
 type GlobalConfig = {
-    ormconfig: ConnectionOptions
-    serverConfig: Config
+    ormconfig?: ConnectionOptions
+    serverConfig?: Config
 }
 
 export {

@@ -10,7 +10,7 @@
         "build": "yarn tsc -d -p tsconfig.json"
     },
     "name": "skyes",
-    "version": "2.3.10",
+    "version": "2.3.11",
     "description": "backend engine",
     "main": "lib/index.js",
     "devDependencies": {
