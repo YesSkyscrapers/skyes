@@ -100,7 +100,7 @@ type TypeOfSplittedParsedObject = {
     [key: string]: string;
 };
 type GlobalConfig = {
-    ormconfig: ConnectionOptions;
-    serverConfig: Config;
+    ormconfig?: ConnectionOptions;
+    serverConfig?: Config;
 };
 export { MapResult, PaginationSettings, Filter, Filters, ReadResult, CountResult, CreateResult, CreateManyResult, DeleteResult, UpdateResult, HandlerParams, ErrorHandlerParams, AddActionParams, GlobalActionHandlerParams, ProcessResponseParams, AddHandlerParams, Header, RequestObject, ResponseObject, CheckUrlResult, TypeOfSplittedParsedObject, GlobalConfig };
