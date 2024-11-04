@@ -1,5 +1,4 @@
 import { IncomingMessage, OutgoingMessage } from 'http'
-import { Config } from '../localServer/server'
 import { ConnectionOptions } from 'typeorm'
 
 interface MapResult {
@@ -124,6 +123,12 @@ type GlobalConfig = {
     serverConfig?: Config
 }
 
+interface Config {
+    defaultHeaders: any
+    defaultPort: number
+    subUrl: string
+}
+
 export {
     MapResult,
     PaginationSettings,
@@ -146,5 +151,6 @@ export {
     ResponseObject,
     CheckUrlResult,
     TypeOfSplittedParsedObject,
-    GlobalConfig
+    GlobalConfig,
+    Config
 }

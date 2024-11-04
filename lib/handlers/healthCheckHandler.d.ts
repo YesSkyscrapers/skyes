@@ -1,3 +1,3 @@
-import { HandlerParams } from '../interfaces/interfaces';
-declare const handler: (params: HandlerParams) => Promise<void>;
+import { Config, HandlerParams } from '../interfaces/interfaces';
+declare const handler: (config: Config) => (params: HandlerParams) => Promise<void>;
 export default handler;

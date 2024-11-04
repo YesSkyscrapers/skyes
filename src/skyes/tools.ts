@@ -1,13 +1,14 @@
 import { IncomingMessage } from 'http'
 import { paramsToObject } from '../tools'
-import server from './server'
 import {
     CheckUrlResult,
+    Config,
     Header,
     RequestObject,
     ResponseObject,
     TypeOfSplittedParsedObject
 } from '../interfaces/interfaces'
+import { argv } from 'process'
 
 const getRequestInfo = (httpRequest: IncomingMessage) => {
     return new Promise<RequestObject>((resolve, reject) => {
@@ -82,10 +83,8 @@ const getRequestObject = (httpRequest: IncomingMessage) => {
 
 let uniqueId = 0
 
-const createResponseObject = (url: string) => {
+const createResponseObject = (config: Config) => (url: string) => {
     return new Promise<ResponseObject>((resolve, reject) => {
-        const config = server.getConfig()
-
         let headers: Array<Header> = []
         headers.push({
             key: 'Content-Type',
@@ -112,8 +111,7 @@ const createResponseObject = (url: string) => {
     })
 }
 
-const checkUrlPatterns = (handlerUrl: string, requestUrl: string) => {
-    const config = server.getConfig()
+const checkUrlPatterns = (config: Config) => (handlerUrl: string, requestUrl: string) => {
     const subUrl = config.subUrl
     let _requestUrl = requestUrl.startsWith(subUrl) ? requestUrl.slice(subUrl.length) : requestUrl
 
@@ -142,4 +140,16 @@ const checkUrlPatterns = (handlerUrl: string, requestUrl: string) => {
     }
 }
 
-export { createResponseObject, getRequestObject, checkUrlPatterns, getRequestInfo }
+const getArg = (argName: string): string | undefined => {
+    const argStr = `-${argName}:`
+    let value: string | undefined = undefined
+    argv.forEach((value) => {
+        if (value.includes(argStr)) {
+            value = value.split(argStr)[1]
+        }
+    })
+
+    return value
+}
+
+export { createResponseObject, getRequestObject, checkUrlPatterns, getRequestInfo, getArg }
