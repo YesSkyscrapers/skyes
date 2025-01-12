@@ -1,12 +1,8 @@
-import skyes from '../skyes'
-import server, { Config } from '../localServer/server'
-import { HandlerParams } from '../interfaces/interfaces'
+import { Config, HandlerParams } from '../interfaces/interfaces'
 
-const handler = async (params: HandlerParams) => {
+const handler = (config: Config, dispose: () => Promise<void>) => async (params: HandlerParams) => {
     const { httpRequest, request, httpResponse, response, handlerParams } = params
     try {
-        const config: Config = server.getConfig()
-
         let headers = []
         headers.push({
             key: 'Content-Type',
@@ -26,7 +22,7 @@ const handler = async (params: HandlerParams) => {
         })
 
         httpResponse.end('disposing')
-        skyes.dispose()
+        await dispose()
         return
     } catch (_error) {
         const error = `DisposeHandler error: ${_error}`

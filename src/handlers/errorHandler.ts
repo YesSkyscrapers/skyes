@@ -1,9 +1,7 @@
-import { ErrorHandlerParams } from '../interfaces/interfaces'
-import server, { Config } from './server'
+import { Config, ErrorHandlerParams } from '../interfaces/interfaces'
 
-export const errorHandler = async (params: ErrorHandlerParams) => {
+const errorHandler = (config: Config) => async (params: ErrorHandlerParams) => {
     const { httpRequest, httpResponse, error } = params
-    const config: Config = server.getConfig()
 
     let headers = []
     headers.push({
@@ -29,3 +27,5 @@ export const errorHandler = async (params: ErrorHandlerParams) => {
         })
     )
 }
+
+export { errorHandler }

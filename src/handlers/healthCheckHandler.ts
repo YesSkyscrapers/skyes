@@ -1,11 +1,8 @@
-import { HandlerParams } from '../interfaces/interfaces'
-import server, { Config } from '../localServer/server'
+import { Config, HandlerParams } from '../interfaces/interfaces'
 
-const handler = async (params: HandlerParams) => {
+const handler = (config: Config) => async (params: HandlerParams) => {
     const { httpRequest, request, httpResponse, response, handlerParams } = params
     try {
-        const config: Config = server.getConfig()
-
         let headers = []
         headers.push({
             key: 'Content-Type',

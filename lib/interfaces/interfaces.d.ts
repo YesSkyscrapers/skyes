@@ -1,6 +1,5 @@
 /// <reference types="node" />
 import { IncomingMessage, OutgoingMessage } from 'http';
-import { Config } from '../localServer/server';
 import { ConnectionOptions } from 'typeorm';
 interface MapResult {
     whereObject: any;
@@ -103,4 +102,9 @@ type GlobalConfig = {
     ormconfig?: ConnectionOptions;
     serverConfig?: Config;
 };
-export { MapResult, PaginationSettings, Filter, Filters, ReadResult, CountResult, CreateResult, CreateManyResult, DeleteResult, UpdateResult, HandlerParams, ErrorHandlerParams, AddActionParams, GlobalActionHandlerParams, ProcessResponseParams, AddHandlerParams, Header, RequestObject, ResponseObject, CheckUrlResult, TypeOfSplittedParsedObject, GlobalConfig };
+interface Config {
+    defaultHeaders: any;
+    defaultPort: number;
+    subUrl: string;
+}
+export { MapResult, PaginationSettings, Filter, Filters, ReadResult, CountResult, CreateResult, CreateManyResult, DeleteResult, UpdateResult, HandlerParams, ErrorHandlerParams, AddActionParams, GlobalActionHandlerParams, ProcessResponseParams, AddHandlerParams, Header, RequestObject, ResponseObject, CheckUrlResult, TypeOfSplittedParsedObject, GlobalConfig, Config };
