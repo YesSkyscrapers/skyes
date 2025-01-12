@@ -12,6 +12,7 @@ declare class EntityManager {
     source: DataSource;
     repositories: RepositoryItem<any>[];
     constructor(dataSourceOptions: DataSourceOptions);
+    init: () => Promise<void>;
     dispose: () => Promise<void>;
     getRepository: <T extends ObjectLiteral>(entityClass: EntityTarget<T>) => Promise<Repository<any>>;
     read: <T extends ObjectLiteral>(entityClass: EntityTarget<T>, pagination: PaginationSettings, filters?: Filters | undefined) => Promise<ReadResult<T>>;

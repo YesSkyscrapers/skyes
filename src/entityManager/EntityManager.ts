@@ -31,6 +31,12 @@ class EntityManager {
         }
     }
 
+    init = async () => {
+        if (!this.source.isInitialized) {
+            await this.source.initialize()
+        }
+    }
+
     dispose = async () => {
         try {
             await this.source.destroy()
