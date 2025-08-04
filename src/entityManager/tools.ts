@@ -1,22 +1,7 @@
 import { Equal, MoreThan, MoreThanOrEqual, LessThanOrEqual, LessThan, In, IsNull, Like, Not, Between } from 'typeorm'
-import { Filters, MapResult } from '../interfaces/interfaces'
+import { Filter, FilterTypes, FiltersMap } from './types'
 
-const FilterTypes = {
-    LIKE: 'like',
-    MORE_THAN: 'morethan',
-    MORE_THAN_OR_EQUAL: 'morethanorqueal',
-    LESS_THAN: 'lessthan',
-    LESS_THAN_OR_EQUAL: 'lessthanorqueal',
-    BETWEEN: 'between',
-    IN: 'in',
-    NOT_NULL: 'notnull',
-    NULL: 'null',
-    EQUAL: 'equal',
-    NOT_EQUAL: 'notequal',
-    ORDER: 'order'
-}
-
-const mapFilters = (filters: Filters) => {
+const mapFilters = <T>(filters: Filter[]) => {
     let whereObject = {}
     let orderObject = {}
 
@@ -65,16 +50,20 @@ const mapFilters = (filters: Filters) => {
                 break
             }
             case FilterTypes.BETWEEN: {
-                whereObject = {
-                    ...whereObject,
-                    [filter.key]: Between(filter.value[0], filter.value[1])
+                if (Array.isArray(filter.value)) {
+                    whereObject = {
+                        ...whereObject,
+                        [filter.key]: Between(filter.value[0], filter.value[1])
+                    }
                 }
                 break
             }
             case FilterTypes.IN: {
-                whereObject = {
-                    ...whereObject,
-                    [filter.key]: In(filter.value)
+                if (Array.isArray(filter.value)) {
+                    whereObject = {
+                        ...whereObject,
+                        [filter.key]: In(filter.value)
+                    }
                 }
                 break
             }
@@ -115,7 +104,7 @@ const mapFilters = (filters: Filters) => {
         }
     })
 
-    let result: MapResult = {
+    let result: FiltersMap<T> = {
         whereObject: whereObject,
         orderObject: orderObject
     }
