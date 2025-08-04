@@ -1,82 +1,77 @@
-import { DataSource, DataSourceOptions, EntityTarget, ObjectLiteral, Repository } from 'typeorm'
+import { DataSource, DataSourceOptions, EntityTarget, ObjectId, ObjectLiteral, Repository } from 'typeorm'
 import {
     CountResult,
-    CreateManyResult,
     CreateResult,
-    Filters,
+    Filter,
+    PaginationSettings,
     ReadResult,
+    RepositoryItem,
     UpdateResult
-} from '../interfaces/interfaces'
+} from './types'
 import { mapFilters } from './tools'
 
-interface RepositoryItem<T extends ObjectLiteral> {
-    entity: EntityTarget<T>
-    repository: Repository<T>
-}
+const EntityManager = (dataSourceOptions: DataSourceOptions | any) => {
+    let source: DataSource | null = null
+    let repositories: RepositoryItem<any>[] = []
 
-interface PaginationSettings {
-    pageSize: number
-    pageIndex: number
-}
-
-class EntityManager {
-    source: DataSource
-    repositories: RepositoryItem<any>[] = []
-
-    constructor(dataSourceOptions: DataSourceOptions) {
+    const init = async () => {
         try {
-            this.source = new DataSource(dataSourceOptions)
+            source = new DataSource(dataSourceOptions)
+
+            if (!source.isInitialized) {
+                await source.initialize()
+            }
         } catch (error) {
-            throw `EntityManager not connect to source: ${error}`
+            throw `EntityManager can't connect to source: ${error}`
         }
     }
 
-    init = async () => {
-        if (!this.source.isInitialized) {
-            await this.source.initialize()
-        }
-    }
-
-    dispose = async () => {
+    const dispose = async () => {
         try {
-            await this.source.destroy()
-            console.log('EntityManager source destroyed.')
+            if (source) {
+                await source.destroy()
+                console.log('EntityManager source destroyed.')
+            }
         } catch (error) {
             throw `EntityManager source destroy failed: ${error}`
         }
     }
 
-    getRepository = async <T extends ObjectLiteral>(entityClass: EntityTarget<T>) => {
-        let exists = this.repositories.find((item) => item.entity === entityClass)
-        if (exists) {
-            return exists.repository
-        } else {
-            const repository = await this.source.getRepository(entityClass)
-            this.repositories.push({
-                entity: entityClass,
-                repository: repository
-            })
+    const getRepository = async <T extends ObjectLiteral>(entityClass: EntityTarget<T>) => {
+        if (!source) {
+            throw 'Source not initialized'
+        }
 
-            return repository
+        let exists = repositories.find((item) => item.entity === entityClass)
+        if (exists) {
+            return exists.repository as Repository<T>
+        } else {
+            if (source) {
+                const repository = await source.getRepository(entityClass)
+                repositories.push({
+                    entity: entityClass,
+                    repository: repository
+                })
+
+                return repository
+            } else {
+                throw 'EntityManager source not inited'
+            }
         }
     }
 
-    read = async <T extends ObjectLiteral>(
+    const read = async <T extends ObjectLiteral>(
         entityClass: EntityTarget<T>,
         pagination: PaginationSettings,
-        filters: Filters | undefined = []
+        filters: Filter[] = []
     ) => {
-        if (!pagination) {
-            throw 'PaginationSettings is empty'
-        }
-
-        const repository = await this.getRepository(entityClass)
+        const repository = await getRepository<T>(entityClass)
         let result: ReadResult<T> = {
             data: [],
-            count: -1
+            count: 0
         }
 
-        const { whereObject, orderObject } = mapFilters(filters)
+        const { whereObject, orderObject } = mapFilters<T>(filters)
         result.data = await repository.find({
             skip: pagination.pageIndex * pagination.pageSize,
             take: pagination.pageSize,
@@ -85,8 +80,6 @@ class EntityManager {
         })
 
         result.count = await repository.count({
-            skip: pagination.pageIndex * pagination.pageSize,
-            take: pagination.pageSize,
             where: whereObject ? whereObject : undefined,
             order: orderObject ? orderObject : undefined
         })
@@ -94,8 +87,8 @@ class EntityManager {
         return result
     }
 
-    count = async <T extends ObjectLiteral>(entityClass: EntityTarget<T>, filters: Filters | undefined = []) => {
-        const repository = await this.getRepository(entityClass)
+    const count = async <T extends ObjectLiteral>(entityClass: EntityTarget<T>, filters: Filter[] = []) => {
+        const repository = await getRepository<T>(entityClass)
 
         const { whereObject, orderObject } = mapFilters(filters)
 
@@ -111,31 +104,23 @@ class EntityManager {
         return result
     }
 
-    create = async <T extends ObjectLiteral>(entityClass: EntityTarget<T>, entity: T) => {
-        const repository = await this.getRepository(entityClass)
+    const create = async <T extends ObjectLiteral>(entityClass: EntityTarget<T>, entities: T[] | T) => {
+        const repository = await getRepository<T>(entityClass)
         let result: CreateResult<T> = {
-            entity: await repository.save(entity),
+            entities: Array.isArray(entities)
+                ? await repository.save<T>(entities)
+                : [await repository.save<T>(entities)],
             count: await repository.count()
         }
 
         return result
     }
 
-    createEntities = async <T extends ObjectLiteral>(entityClass: EntityTarget<T>, entities: Array<T>) => {
-        const repository = await this.getRepository(entityClass)
-        let result: CreateManyResult<T> = {
-            entities: await repository.save(entities),
-            count: await repository.count()
-        }
-
-        return result
-    }
-
-    deleteEntities = async <T extends ObjectLiteral>(entityClass: EntityTarget<T>, entities: Array<T> = []) => {
-        const repository = await this.getRepository(entityClass)
+    const remove = async <T extends ObjectLiteral>(entityClass: EntityTarget<T>, entities: T[] | T) => {
+        const repository = await getRepository<T>(entityClass)
 
         let result: CountResult = {
-            count: -1
+            count: 0
         }
 
         await repository.delete(entities as any)
@@ -145,22 +130,38 @@ class EntityManager {
         return result
     }
 
-    updateEntity = async <T extends ObjectLiteral>(entityClass: EntityTarget<T>, entity: any) => {
-        const repository = await this.getRepository(entityClass)
+    const update = async <T extends ObjectLiteral>(entityClass: EntityTarget<T>, entity: any) => {
+        const repository = await getRepository<T>(entityClass)
 
         const entityInDb = await repository.findOne({ where: { id: entity.id } })
 
-        const newEntity = {
+        const newEntity: T = {
             ...entityInDb,
             ...entity
         }
 
         await repository.save(newEntity)
 
+        const updated: T | null = await repository.findOne({ where: { id: entity.id } })
+
+        if (!updated) {
+            throw 'Update error: Cant find entity after update'
+        }
+
         let result: UpdateResult<T> = {
-            data: (await repository.findOne({ where: { id: entity.id } })) as T
+            data: updated
         }
         return result
+    }
+
+    return {
+        dispose,
+        read,
+        count,
+        create,
+        remove,
+        update,
+        init
     }
 }
 

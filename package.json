@@ -1,6 +1,8 @@
 {
     "dependencies": {
+        "@types/formidable": "^3.4.5",
         "esm": "^3.2.25",
+        "formidable": "2",
         "mime-types": "^2.1.30",
         "moment": "^2.29.1",
         "typeorm": "^0.3.20",
@@ -10,7 +12,7 @@
         "build": "yarn tsc -d -p tsconfig.json"
     },
     "name": "skyes",
-    "version": "3.0.0",
+    "version": "4.0.1",
     "description": "backend engine",
     "main": "lib/index.js",
     "devDependencies": {

@@ -1,9 +1,13 @@
 /// <reference types="node" />
-import { IncomingMessage } from 'http';
-import { CheckUrlResult, Config, RequestObject, ResponseObject } from '../interfaces/interfaces';
-declare const getRequestInfo: (httpRequest: IncomingMessage) => Promise<RequestObject>;
-declare const getRequestObject: (httpRequest: IncomingMessage) => Promise<RequestObject>;
-declare const createResponseObject: (config: Config) => (url: string) => Promise<ResponseObject>;
-declare const checkUrlPatterns: (config: Config) => (handlerUrl: string, requestUrl: string) => CheckUrlResult;
-declare const getArg: (argName: string) => string | undefined;
-export { createResponseObject, getRequestObject, checkUrlPatterns, getRequestInfo, getArg };
+import { AssociatePathPatternResult } from './types';
+import { OutgoingMessage } from 'http';
+declare const subtractCustomPath: (url: string, customPath?: string) => string;
+declare const getPathArray: (url: string) => string[];
+declare const associatePathPattern: ({ url, pattern }: {
+    url: string;
+    pattern: string;
+}) => AssociatePathPatternResult;
+declare const fillResponseWithBasicHeaders: (response: OutgoingMessage, constHeaders?: {
+    [key: string]: string;
+}) => void;
+export { getPathArray, associatePathPattern, subtractCustomPath, fillResponseWithBasicHeaders };
