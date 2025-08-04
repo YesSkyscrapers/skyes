@@ -1,169 +1,124 @@
-import http, { Server as HttpServer, IncomingMessage, OutgoingMessage } from 'http'
-import { checkUrlPatterns, createResponseObject, getArg, getRequestInfo, getRequestObject } from './tools'
-import {
-    AddActionParams,
-    AddHandlerParams,
-    CheckUrlResult,
-    Config,
-    ErrorHandlerParams,
-    GlobalActionHandlerParams,
-    RequestObject,
-    ResponseObject
-} from '../interfaces/interfaces'
-import disposeHandler from '../handlers/disposeHandler'
-import healthCheckHandler from '../handlers/healthCheckHandler'
-import { errorHandler } from '../handlers/errorHandler'
-const moment = require('moment')
+import http, { Server, IncomingMessage, OutgoingMessage } from 'http'
+import { Action, AssociatePathPatternResult, Handler, InitSkyesParams } from './types'
+import moment from 'moment'
+import { associatePathPattern, fillResponseWithBasicHeaders, subtractCustomPath } from './tools'
+import { getErrorHandler } from './handlers/errorHandler'
+import healthcheckHandler from './handlers/healthcheckHandler'
+import { getActionHandler } from './handlers/actionHandler'
+import DisabledAuthModule from './authModule/DisabledAuthModule'
+import { AuthModuleInstance } from './authModule/types'
 
-class Skyes {
-    serverConfig: Config
-    httpServer: HttpServer
-    port: number
-    handlers: AddHandlerParams[]
-    actions: AddActionParams[]
-    errorHandler: (params: ErrorHandlerParams) => Promise<void>
-    createResponseObject: (url: string) => Promise<ResponseObject>
-    checkUrlPatterns: (handlerUrl: string, requestUrl: string) => CheckUrlResult
+const Skyes = (initParams: InitSkyesParams) => {
+    const actions: Action<any, any>[] = []
 
-    constructor(config: Config) {
-        this.serverConfig = config
-        this.handlers = this.getDefaultHandlers(config)
-        this.actions = []
-        this.httpServer = http.createServer(this.serverHandler)
-        let cmdPort = getArg('port')
-        this.port = cmdPort && Number(cmdPort) !== Number.NaN ? Number(cmdPort) : this.serverConfig.defaultPort
-        this.errorHandler = errorHandler(config)
-        this.createResponseObject = createResponseObject(config)
-        this.checkUrlPatterns = checkUrlPatterns(config)
-    }
+    const authModule: AuthModuleInstance = initParams.authModule ? initParams.authModule : DisabledAuthModule()
 
-    getDefaultHandlers = (config: Config) => {
-        return [
-            {
-                url: 'action',
-                method: 'POST',
-                handler: async (params: GlobalActionHandlerParams) => {
-                    const { httpRequest, request, httpResponse, response, handlerParams } = params
-                    try {
-                        let actionHandler = this.actions.find((_action) => _action.name == request.body.action)
-                        if (actionHandler) {
-                            await actionHandler.action(params)
+    const getActions = () => actions
 
-                            if (!response.disableProcessing) {
-                                response.headers.forEach((header) => {
-                                    httpResponse.setHeader(header.key, header.value!)
-                                })
+    const handlers: Handler[] = [
+        {
+            path: 'healthcheck',
+            method: 'GET',
+            handle: healthcheckHandler
+        },
+        {
+            path: 'action',
+            method: 'POST',
+            handle: getActionHandler(getActions, authModule)
+        }
+    ]
 
-                                httpResponse.end(response.body ? JSON.stringify(response.body) : undefined)
-                            }
-                        } else {
-                            throw 'Action not found'
-                        }
-                    } catch (error) {
-                        const errorParams: ErrorHandlerParams = {
-                            httpRequest,
-                            httpResponse,
-                            error
-                        }
-                        await this.errorHandler(errorParams)
-                    }
-                }
-            },
-            {
-                url: 'dispose',
-                method: 'GET',
-                handler: disposeHandler(config, this.stop)
-            },
-            {
-                url: 'healthcheck',
-                method: 'GET',
-                handler: healthCheckHandler(config)
-            }
-        ]
-    }
-
-    serverHandler = async (httpRequest: IncomingMessage, httpResponse: OutgoingMessage) => {
-        const response = await this.createResponseObject(httpRequest.url!)
-        let request: RequestObject
-        const info = await getRequestInfo(httpRequest)
-
+    const handleRequest = async (request: IncomingMessage, response: OutgoingMessage) => {
         try {
-            const handler = this.handlers.find((_handler) => {
-                return (
-                    (!_handler.method || (_handler.method == info.method && !!_handler.method)) &&
-                    this.checkUrlPatterns(_handler.url, info.url).result
-                )
-            })
-            if (handler) {
-                if (handler.parseBody || handler.parseBody == undefined) {
-                    request = await getRequestObject(httpRequest)
-                } else {
-                    request = info
+            fillResponseWithBasicHeaders(response, initParams.constHeaders)
+
+            const requestUrl = subtractCustomPath(request.url!, initParams.customPath)
+            const handlersWithSameMethod = handlers.filter((item) => !item.method || item.method === request.method)
+
+            let selectedHandler: Handler | null = null
+            let selectedHandlerAssociateInfo: AssociatePathPatternResult | null = null
+
+            for (const handler of handlersWithSameMethod) {
+                const associateInfo = associatePathPattern({ url: requestUrl, pattern: handler.path })
+                if (associateInfo.isSame) {
+                    selectedHandler = handler
+                    selectedHandlerAssociateInfo = associateInfo
+                    break
                 }
-                const handlerParams = this.checkUrlPatterns(handler.url, request.url).params
-                const params: GlobalActionHandlerParams = {
-                    httpRequest,
-                    request,
-                    httpResponse,
-                    response,
-                    handlerParams
+            }
+
+            if (selectedHandler) {
+                if (selectedHandler.verifyAuth) {
+                    await authModule.check(request)
                 }
-                await handler.handler(params)
+
+                await selectedHandler.handle(request, response, selectedHandlerAssociateInfo!.params!)
             } else {
                 throw 'Handler not found'
             }
-        } catch (error) {
-            const params: ErrorHandlerParams = {
-                httpRequest,
-                httpResponse,
-                error
+        } catch (err: any) {
+            await getErrorHandler(request, response, err?.message ? err.message : err)
+        }
+    }
+
+    const httpServer: Server = http.createServer(handleRequest)
+
+    const start = () => {
+        return new Promise((resolve, reject) => {
+            try {
+                httpServer.listen(initParams.port, initParams?.host || '0.0.0.0', () => {
+                    console.log(`${moment().format('DD.MM HH:mm:ss')}: Skyes started on port: ${initParams.port}`)
+                    resolve(null)
+                })
+            } catch (err) {
+                reject(err)
             }
-            await this.errorHandler(params)
-        }
+        })
     }
 
-    start = async () => {
-        try {
-            await new Promise((resolve, reject) => {
-                this.httpServer.listen(this.port, () => {
-                    console.log(`${moment().format('DD.MM HH:mm:ss')}: Skyes started on port: ${this.port}`)
-                    resolve(null)
+    const stop = () => {
+        return new Promise((resolve, reject) => {
+            try {
+                httpServer.close((err?: Error) => {
+                    if (err) {
+                        reject(err)
+                    } else {
+                        console.log(`${moment().format('DD.MM HH:mm:ss')}: Skyes stopped`)
+                        resolve(null)
+                    }
                 })
-            })
-        } catch (error) {
-            throw `${moment().format('DD.MM HH:mm:ss')}: Server start failed with error: ${error}`
-        }
+            } catch (err) {
+                reject(err)
+            }
+        })
     }
 
-    stop = async () => {
-        try {
-            await new Promise((resolve, reject) => {
-                this.httpServer.close(() => {
-                    console.log(`${moment().format('HH:mm:ss')}: Local server stopped`)
-                    resolve(null)
-                })
-            })
-        } catch (error) {
-            throw `${moment().format('HH:mm:ss')}: Server stop failed with error: ${error}`
-        }
+    const addAction = <T, U>({ name, handle, verifyAuth }: Action<T, U>) => {
+        actions.push({
+            name,
+            handle,
+            verifyAuth
+        })
     }
 
-    addAction = (params: AddActionParams) => {
-        this.actions.push(params)
-    }
-
-    addHandler = (params: AddHandlerParams) => {
-        const { url, method, handler, parseBody } = params
-
-        if (url == 'action') {
+    const addHandler = ({ path, method, handle, verifyAuth }: Handler) => {
+        if (path == 'action') {
             throw 'Action handler reserved'
         } else {
-            this.handlers.push(params)
+            handlers.push({
+                path,
+                method,
+                handle,
+                verifyAuth
+            })
         }
     }
 
-    getConfig = () => {
-        return this.serverConfig
+    return {
+        start,
+        stop,
+        addAction,
+        addHandler
     }
 }
 
