@@ -36,6 +36,7 @@ type HandlerHandle = (
 
 type Handler = {
     path: string
+    simpleStartOf?: string
     method?: HttpMethod
     handle: HandlerHandle
     verifyAuth?: boolean

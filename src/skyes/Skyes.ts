@@ -47,6 +47,17 @@ const Skyes = (initParams: InitSkyesParams) => {
                 }
             }
 
+            if (!selectedHandler) {
+                const simpleHandlers = handlers.filter((item) => !!item.simpleStartOf)
+                for (const handler of simpleHandlers) {
+                    if (requestUrl.startsWith(handler.simpleStartOf!)) {
+                        selectedHandler = handler
+                        selectedHandlerAssociateInfo = { isSame: true, params: {} }
+                        break
+                    }
+                }
+            }
+
             if (selectedHandler) {
                 if (selectedHandler.verifyAuth) {
                     await authModule.check(request)
@@ -101,7 +112,7 @@ const Skyes = (initParams: InitSkyesParams) => {
         })
     }
 
-    const addHandler = ({ path, method, handle, verifyAuth }: Handler) => {
+    const addHandler = ({ path, method, handle, verifyAuth, simpleStartOf }: Handler) => {
         if (path == 'action') {
             throw 'Action handler reserved'
         } else {
@@ -109,7 +120,8 @@ const Skyes = (initParams: InitSkyesParams) => {
                 path,
                 method,
                 handle,
-                verifyAuth
+                verifyAuth,
+                simpleStartOf
             })
         }
     }

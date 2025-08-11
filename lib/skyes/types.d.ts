@@ -25,6 +25,7 @@ type HandlerCustomParams = {
 type HandlerHandle = (request: IncomingMessage, response: OutgoingMessage, pathParams: HandlerPathParams, params?: HandlerCustomParams) => Promise<void>;
 type Handler = {
     path: string;
+    simpleStartOf?: string;
     method?: HttpMethod;
     handle: HandlerHandle;
     verifyAuth?: boolean;
