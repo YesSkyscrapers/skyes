@@ -7,11 +7,16 @@ class Config {
     defaultHeaders: any
     defaultPort: number
     subUrl: string
+    timeouts?: {
+        keepAliveTimeout: number
+        headersTimeout: number
+    }
 
     constructor(props?: Config | undefined | null) {
         this.defaultHeaders = props?.defaultHeaders || {}
         this.defaultPort = props?.defaultPort || 3030
         this.subUrl = props?.subUrl || ''
+        this.timeouts = props?.timeouts
     }
 }
 
@@ -37,6 +42,11 @@ class Server {
             })
 
             this.httpServer = http.createServer(globalHandler)
+            if (this.serverConfig.timeouts) {
+                this.httpServer.keepAliveTimeout = this.serverConfig.timeouts.keepAliveTimeout
+                this.httpServer.headersTimeout = this.serverConfig.timeouts.headersTimeout
+            }
+
             await new Promise((resolve, reject) => {
                 this.httpServer!.listen(port, () => {
                     console.log(`${moment().format('DD.MM HH:mm:ss')}: Skyes started on port: ${port}`)

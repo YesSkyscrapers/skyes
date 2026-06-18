@@ -4,6 +4,10 @@ declare class Config {
     defaultHeaders: any;
     defaultPort: number;
     subUrl: string;
+    timeouts?: {
+        keepAliveTimeout: number;
+        headersTimeout: number;
+    };
     constructor(props?: Config | undefined | null);
 }
 declare class Server {
