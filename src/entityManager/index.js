@@ -64,23 +64,20 @@ class EntityManager {
             order: orderObject ? orderObject : undefined
         })
 
-        result.count = await repository.count({
-            skip: pagination.pageIndex * pagination.pageSize,
-            take: pagination.pageSize,
-            where: whereObject ? whereObject : undefined,
-            order: orderObject ? orderObject : undefined
-        })
+        // result.count = await repository.count({
+        //     skip: pagination.pageIndex * pagination.pageSize,
+        //     take: pagination.pageSize,
+        //     where: whereObject ? whereObject : undefined,
+        //     order: orderObject ? orderObject : undefined
+        // })
 
-        return result;
+        return result
     }
 
-    count = async (
-        entityClass,
-        filters = DEFAULT_FILTERS
-    ) => {
-        this.checkConnection();
+    count = async (entityClass, filters = DEFAULT_FILTERS) => {
+        this.checkConnection()
 
-        const repository = this.connection.getRepository(entityClass);
+        const repository = this.connection.getRepository(entityClass)
 
         const { whereObject, orderObject } = mapFilters(filters)
 
