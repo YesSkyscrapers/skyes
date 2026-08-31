@@ -103,7 +103,7 @@ class EntityManager {
         const repository = this.connection?.getRepository(entityClass)
         let result: CreateResult<T> = {
             entity: await repository!.save(entity),
-            count: await repository!.count()
+            count: -1 //await repository!.count()
         }
 
         return result
@@ -115,7 +115,7 @@ class EntityManager {
         const repository = this.connection?.getRepository(entityClass)
         let result: CreateManyResult<T> = {
             entities: await repository!.save(entities),
-            count: await repository!.count()
+            count: -1 //await repository!.count()
         }
 
         return result
@@ -132,7 +132,7 @@ class EntityManager {
 
         await repository!.remove(entities as any)
 
-        result.count = await repository!.count()
+        // result.count = await repository!.count()
 
         return result
     }
