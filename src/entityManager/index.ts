@@ -68,12 +68,12 @@ class EntityManager {
             order: orderObject ? orderObject : undefined
         })
 
-        result.count = await repository!.count({
-            skip: pagination.pageIndex * pagination.pageSize,
-            take: pagination.pageSize,
-            where: whereObject ? whereObject : undefined,
-            order: orderObject ? orderObject : undefined
-        })
+        // result.count = await repository!.count({
+        //     skip: pagination.pageIndex * pagination.pageSize,
+        //     take: pagination.pageSize,
+        //     where: whereObject ? whereObject : undefined,
+        //     order: orderObject ? orderObject : undefined
+        // })
 
         return result
     }
